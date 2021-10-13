@@ -1,0 +1,3 @@
+#!/bin/sh
+gcc -o simulador simulador.c queue.c estructuras.c test.c
+
