@@ -23,8 +23,8 @@ machine_t machine;
 
 
 // Parámetros default
-int param_nElementosCola = 100;
-int param_nPool= 256;
+int param_nElementosCola;
+int param_nPool;
 int n_cpu;
 int n_core;
 int n_thread;
@@ -33,16 +33,20 @@ void procesarParametros(int argc, char *argv[]);
 
 int main(int argc, char *argv[]){
 
-	
+	// Poniendo los valores default de las variables
+	param_nPool = DEFAULT_POOLSIZE;
+	param_nElementosCola = DEFAULT_QUEUESIZE; 
+	n_cpu = DEFAULT_CPU;
+	n_core = DEFAULT_CORE;
+	n_thread = DEFAULT_THREAD;
 
 	// Tratar parámetros
 	procesarParametros(argc, argv);
 
-	// Tratamiento de errores
+   /*---------------------------------*
+	- Inicialización de los elementos -
+	*---------------------------------*/
 
-
-	// Inicializar estructuras de datos
-	
 	// 	Inicializar el almacenador de PBS
 	inicializar_estructura(param_nPool);
 	// 	Inicializar el indexador de PBS
@@ -50,36 +54,36 @@ int main(int argc, char *argv[]){
 	// 	Inicializar colas del dispatcher
 	inicializar_queue_pcb(&q_pcb, param_nElementosCola);
 	
-	
-
-	test(param_nElementosCola);
+	//test(param_nElementosCola);
 	
 	// Inicializar elementos de sincronización
 
 	// Lanzar hilos que implementaran los distintos subsistemas
 	
 	// Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
-	//printf("1\n");
+
+
+
+	// Liberar recursos asignados
 	free(q_pcb.malloc);
-	//printf("2\n");
-	free(memPCBs.cola_idx.malloc);
-	
+	free(memPCBs.cola_idx.malloc);	
 	free(memPCBs.malloc);
-	//printf("3\n");
-	//printf("4\n");
 }
 
-int errorParametros(char *s) {
- fprintf(stderr,"***error*** %s\n",s);
- exit(-1);
-} 
-int getInt(char * _numero){
+void getInt(char * _numero, char letra, int * var){
 	char *fin;
 	long value = strtol(_numero, &fin, 10); 
-	if (fin == _numero || *fin != '\0' || errno == ERANGE){
-		fprintf(stderr, "Error, dato introducido no es un número: %s",_numero);
-		exit(3);
+	if (fin == _numero || *fin != '\0' || errno == ERANGE)
+	{
+		fprintf(stderr, "Error, dato introducido no es un número: %s\n",_numero);
+		return;
 	}
+	if(value <= 0)
+	{
+		fprintf(stderr, "%c: No puede ser negativo o cero: %d\n",letra, (int) value );
+		return;
+	}	
+	*var = (int) value;
 }
 void procesarParametros(int argc, char *argv[]){ 
  	int opt, longindex;
@@ -94,55 +98,47 @@ void procesarParametros(int argc, char *argv[]){
 	{0, 0, 0, 0 }
 	};
 
+
 	longindex =0;
-	while ((opt = getopt_long(argc, argv,"hc:r:", long_options, &longindex )) != -1) 
+	while ((opt = getopt_long(argc, argv,"hq:p:c:k:t:", long_options, &longindex )) != -1) 
 	{
 
 		switch(opt) 
 		{
 		case 'p': /* poolsize */
-			param_nPool = atoi(optarg);
-			if(param_nPool <= 0) 
-				errorParametros("Columnas: Fuera de rango");			
-
+			getInt(optarg , 'p', &param_nPool);
 			break;
 		case 'q': /* queuesize */
-			param_nElementosCola = atoi(optarg);
-			if(param_nElementosCola <= 0) 
-				errorParametros("Filas: Fuera de rango");
-
+			getInt(optarg, 'q', &param_nElementosCola);
 			break;
-		case 'c':
-			n_cpu = atoi(optarg);
-			if(n_cpu <= 0) 
-				errorParametros("Filas: Fuera de rango");
-
-		break;
-		case 'k':
-			n_core = atoi(optarg);
-			if(n_core <= 0) 
-				errorParametros("Filas: Fuera de rango");
-
-		break;
-		case 't':
-			n_thread = atoi(optarg);
-			if(n_thread <= 0) 
-				errorParametros("Filas: Fuera de rango");
-
-		break;
+		case 'c': /* n_cpu */
+			getInt(optarg, 'c', &n_cpu);
+			break;
+		case 'k': /* n_core */
+			getInt(optarg, 'k', &n_core);
+			break;
+		case 't': /* n_thread */
+			getInt(optarg, 't', &n_thread);
+			break;
 		case 'h': /* -h or --help */
 		case '?':
 			printf ("Uso %s [OPTIONS]\n", argv[0]);
-			/*printf (" -c --column=NNN\t"
-			"Ńº de columnas [%d]\n", COLUMN_DEFAULT);*/
+			printf (" -c, --n_cpu=n\t\t"
+			"Número de cpus: %d\n", DEFAULT_CPU);
+			printf (" -k, --n_core=n\t\t"
+			"Número de cores: %d\n", DEFAULT_CORE);
+			printf (" -t, --n_thread=n\t"
+			"Número de threads: %d\n", DEFAULT_THREAD);
+			printf (" -p, --poolsize=n\t"
+			"Tamaño de pool: %d\n", DEFAULT_POOLSIZE);
+			printf (" -q, --queuesize=n\t"
+			"Tamaño de cola: %d\n", DEFAULT_QUEUESIZE);
 			printf (" -h, --help\t\t"
 			"Ayuda\n");
-			/*printf (" -r --row=NNN\t\t"
-			"Ńº de filas [%d]\n", ROW_DEFAULT);*/
 			exit (2);
 		default:
-			errorParametros("Unknown argument option");
-			exit(2);
+			fprintf(stderr, "Argumento desconocido, error\n");
+			exit(4);
 		} // switch
 	} // while
 } // procesarParam
