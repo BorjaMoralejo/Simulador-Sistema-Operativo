@@ -9,11 +9,17 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdio.h>
+#include <getopt.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "defines.h"
 #include "estructuras.h"
 #include "queue.h"
 #include "test.h"
-#include <getopt.h>
+#include "clock.h"
+#include "timer.h"
+#include "scheduler.h"
+
 #define PRINTF_EN 1
 
 mempool_pcb_t memPCBs;
@@ -57,10 +63,19 @@ int main(int argc, char *argv[]){
 	//test(param_nElementosCola);
 	
 	// Inicializar elementos de sincronización
-
+	init_clock();
+	init_scheduler();
 	// Lanzar hilos que implementaran los distintos subsistemas
-	
 	// Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
+	pid_t pid;
+	if(fork() == 0)
+		start_clock();
+	
+	if(fork() == 0)
+		start_timer(0, DISPATCHER_SCHEDULER_FUNC);
+	//if(fork() == 0)
+	//	scheduleFunc();
+	
 
 
 

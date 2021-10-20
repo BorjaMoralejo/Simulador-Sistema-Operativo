@@ -1,0 +1,8 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "types.h": "c",
+        "getopt.h": "c",
+        "printf.h": "c"
+    }
+}

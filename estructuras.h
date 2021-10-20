@@ -10,7 +10,7 @@ struct cpu;
 struct core;
 struct thread;
 
-typedef int pid_t;
+typedef int pid_t2;
 typedef struct pcb pcb_t;
 typedef struct lkdList_int lkdList_int_t;
 typedef struct lkdList_node_int ll_node_int_t;
@@ -31,7 +31,7 @@ void putPCB(pcb_t * _elem);
 
 typedef struct pcb
 {
-	pid_t pid;
+	pid_t2 pid;
 	unsigned long int ttl;
 	ll_node_int_t *indice; // Indice del gestor de memoria
 } pcb_t;
