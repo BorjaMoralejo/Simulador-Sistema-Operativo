@@ -23,13 +23,14 @@ void start_clock(){
         pthread_mutex_lock(&timer_mtx);
 
         // Una vez los timers terminan, continuar
-        while(nDone < nTimers)
+        while(nDone < nTimers){
             pthread_cond_wait(&timer_cond, &timer_mtx);
+        }
         nDone = 0;
         // notificar a los timers
         pthread_cond_broadcast(&br_timer_cond);
         pthread_mutex_unlock(&timer_mtx);
-        sleep(1);
+        sleep(1);   
     }
     
 }

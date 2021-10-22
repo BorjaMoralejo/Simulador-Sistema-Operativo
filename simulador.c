@@ -12,6 +12,7 @@
 #include <getopt.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "defines.h"
 #include "estructuras.h"
 #include "queue.h"
@@ -68,7 +69,8 @@ int main(int argc, char *argv[]){
 	// Lanzar hilos que implementaran los distintos subsistemas
 	// Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
 	pid_t pid;
-	if(fork() == 0)
+	
+	if(fork() == 0) 
 		start_clock();
 	
 	if(fork() == 0)
