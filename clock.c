@@ -11,16 +11,15 @@ void init_clock(){
     pthread_cond_init(&timer_cond, NULL);
     pthread_cond_init(&br_timer_cond, NULL);
 }
-void start_clock(){
+void* start_clock(void * _args){
 
-    printf("wtf\n");
     while(1) // pulso
     { 
-        printf("pulse\n");
         // avanzar tiempo de la maquina(cpu,cores,hilos)
 
         // Sincronizar timers
         pthread_mutex_lock(&timer_mtx);
+        printf("Pulso\n");
 
         // Una vez los timers terminan, continuar
         while(nDone < nTimers){

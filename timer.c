@@ -14,10 +14,12 @@ typedef void(*func_t)(int);
 void timer_DispSched(int _time);
 void timer_PGenerator(int _time);
 
-void start_timer(short int _id, short int _function){
+void* start_timer(void * _args){
+    short int * punt = (short *) _args;
+    short int id = punt[0], function = punt[1];
     func_t func_timer;
     unsigned int localTime = 0 ;
-    switch (_function)
+    switch (function)
     {
         case DISPATCHER_SCHEDULER_FUNC:
             func_timer = &timer_DispSched;
@@ -43,8 +45,7 @@ void start_timer(short int _id, short int _function){
         // do stuff con una funcion virtual
         // por ejemplo, decirle al scheduler cada X tiempo que despierte
         // decirle a pgenerator que haga algo
-        printf("tick?%d\n", localTime);
-        sleep(1);
+        
         (*func_timer)(localTime);
 
         nDone++;
@@ -62,13 +63,14 @@ void timer_DispSched(int _time){
     if(_time % tick_freq_dispsched == 0) // tick scheduler
     {
         // via libre al scheduler
+        pthread_mutex_lock(&sched_mtx);
+
         printf("tick dispatcher\n");
-      //  while(sched_flag != 1)
-       //     pthread_cond_wait(&sched_cond, &sched_mtx);
-       // sched_flag = 0;
+        while(sched_flag != 1)
+            pthread_cond_wait(&sched_cond, &sched_mtx);
+        sched_flag = 0;
         // esperar a que el scheduler haya terminado
-       // pthread_cond_broadcast(&br_sched_cond);
-       // pthread_mutex_unlock(&sched_mtx);
+        pthread_mutex_unlock(&sched_mtx);
         // esperar a que el scheduler haya terminado
         // bloquearlo otra vez
 

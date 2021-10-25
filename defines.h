@@ -13,9 +13,12 @@ Este fichero contiene los defines del proyecto: Simulador de Sistema Operativo
 #define DEFAULT_CORE 2
 #define DEFAULT_THREAD 1
 
+// Simulador.c
+enum enum_threadName {CLOCK_TH, TIMER0_TH, TIMER1_TH, SCHEDULER_TH, PGEN_TH, NTHREADS};
+
+
 // Timer
-#define DISPATCHER_SCHEDULER_FUNC   0
-#define PGENERATOR_FUNC             1
+enum enum_timerFuncTypes {DISPATCHER_SCHEDULER_FUNC, PGENERATOR_FUNC};
 
 #endif
 

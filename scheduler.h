@@ -2,6 +2,6 @@
 #define _SCHEDULER_H 1
 
 void init_scheduler();
-void scheduleFunc();
+void * scheduleFunc(void * _args);
 
 #endif

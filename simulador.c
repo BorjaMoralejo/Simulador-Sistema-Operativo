@@ -29,7 +29,7 @@ queue_pcb_t q_pcb;
 machine_t machine;
 
 
-// Parámetros default
+// Parámetros default // TODO: meterlo en un struct de parameters
 int param_nElementosCola;
 int param_nPool;
 int n_cpu;
@@ -39,14 +39,16 @@ int n_thread;
 void procesarParametros(int argc, char *argv[]);
 
 int main(int argc, char *argv[]){
-
+	// Declaraciones
+	pthread_t* arrThreads;
+	void *arrParametros;
+	int i;
 	// Poniendo los valores default de las variables
 	param_nPool = DEFAULT_POOLSIZE;
 	param_nElementosCola = DEFAULT_QUEUESIZE; 
 	n_cpu = DEFAULT_CPU;
 	n_core = DEFAULT_CORE;
 	n_thread = DEFAULT_THREAD;
-
 	// Tratar parámetros
 	procesarParametros(argc, argv);
 
@@ -63,22 +65,36 @@ int main(int argc, char *argv[]){
 	
 	//test(param_nElementosCola);
 	
+	//pthread_create(scheduler_thread, NULL, &start_clock(), NULL);
+	//pthread_create(pgen_thread, NULL, &start_clock(), NULL);
 	// Inicializar elementos de sincronización
 	init_clock();
 	init_scheduler();
 	// Lanzar hilos que implementaran los distintos subsistemas
 	// Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
-	pid_t pid;
-	
-	if(fork() == 0) 
-		start_clock();
-	
-	if(fork() == 0)
-		start_timer(0, DISPATCHER_SCHEDULER_FUNC);
-	//if(fork() == 0)
-	//	scheduleFunc();
-	
+	// Iniciando hilos
+	printf("Iniciando hilos...\n");
+	arrThreads = malloc(sizeof(pthread_t)*NTHREADS);
+	// ----------CLOCK------------
+	pthread_create(&arrThreads[CLOCK_TH], NULL, &start_clock, NULL);
 
+	// ----------TIMERS------------
+	// Por ahora el timer recibe dos parámetros, el id y la funcion dedicada
+	arrParametros = malloc(sizeof(short int)*2); // falta liberar memoria
+	((short *)arrParametros)[0] = 0;	 
+	((short *)arrParametros)[1] = DISPATCHER_SCHEDULER_FUNC;
+	pthread_create(&arrThreads[TIMER0_TH], NULL, &start_timer, arrParametros);
+	
+	// ----------SCHEDULER------------
+	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &scheduleFunc, NULL);
+	
+	// ----------PGenerator------------
+
+	printf("Hilos iniciados\n");
+	for(i = 0; i < NTHREADS; i++)
+	{
+		pthread_join(arrThreads[i], NULL);
+	}
 
 
 	// Liberar recursos asignados

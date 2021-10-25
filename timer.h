@@ -3,6 +3,6 @@
 
 
 
-void start_timer(short int _id, short int _function);
+void* start_timer(void * _args);
 
 #endif
