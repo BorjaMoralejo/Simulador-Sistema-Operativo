@@ -27,18 +27,19 @@ void inicializar_queue_pcb(queue_pcb_t * _cola, int _maxElem){
 char enqueue(queue_pcb_t *_q, pcb_t *_elem){
 	if(_q->nElem >= _q->maxElem){
 		printf("Ojo, la cola está llena! %d \n", _q->nElem);
-		return 0; // está llena la cola
+		return 'n'; // está llena la cola
 	}
 	_q->malloc[_q->lastPos] = _elem;
 	printf("colocado en %d %ld \n",_q->lastPos, (long int) &_q->malloc[_q->lastPos]);
 	_q->lastPos = (_q->lastPos +1) % _q->maxElem;
 	_q->nElem++;
+	return 'y';
 }
 pcb_t * dequeue(queue_pcb_t *_cola){
 	if(_cola->nElem == 0){
 		printf("COLA VACIA\n");
 		
-		return '\0';
+		return NULL;
 	}
 	pcb_t * _ret = _cola->malloc[_cola->firstPos];
 	_cola->nElem--;

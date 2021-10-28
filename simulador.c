@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
+
 #include "defines.h"
 #include "estructuras.h"
 #include "queue.h"
@@ -20,58 +21,68 @@
 #include "clock.h"
 #include "timer.h"
 #include "scheduler.h"
+#include "pgenerator.h"
 
 #define PRINTF_EN 1
 
 mempool_pcb_t memPCBs;
 lkdList_int_t *cola_idx;
 queue_pcb_t q_pcb;
+param_init_t paramStruct;
+matrix3_t matrix3;
 machine_t machine;
 
-
-// Parámetros default // TODO: meterlo en un struct de parameters
-int param_nElementosCola;
-int param_nPool;
-int n_cpu;
-int n_core;
-int n_thread;
-
-void procesarParametros(int argc, char *argv[]);
+// Parámetros default
+void procesarParametros(int argc, char *argv[], param_init_t *_params);
 
 int main(int argc, char *argv[]){
 	// Declaraciones
 	pthread_t* arrThreads;
 	void *arrParametros;
 	int i;
-	// Poniendo los valores default de las variables
-	param_nPool = DEFAULT_POOLSIZE;
-	param_nElementosCola = DEFAULT_QUEUESIZE; 
-	n_cpu = DEFAULT_CPU;
-	n_core = DEFAULT_CORE;
-	n_thread = DEFAULT_THREAD;
-	// Tratar parámetros
-	procesarParametros(argc, argv);
+	matrix3_t m3;
+	matrix3 = m3;
+	param_init_t pit;
+	paramStruct = pit;
+	machine_t mach;
+	machine = mach;
 
+	// Poniendo los valores default de las variables
+	paramStruct.nPool = DEFAULT_POOLSIZE;
+	paramStruct.nElementosCola = DEFAULT_QUEUESIZE; 
+	paramStruct.n_cpu = DEFAULT_CPU;
+	paramStruct.n_core = DEFAULT_CORE;
+	paramStruct.n_thread = DEFAULT_THREAD;
+
+	// Tratar parámetros
+	procesarParametros(argc, argv, &paramStruct);
+	
    /*---------------------------------*
-	- Inicialización de los elementos -
+	| Inicialización de los elementos |
 	*---------------------------------*/
 
-	// 	Inicializar el almacenador de PBS
-	inicializar_estructura(param_nPool);
-	// 	Inicializar el indexador de PBS
-	inicializar_linkedList_int(&memPCBs.cola_idx, param_nPool);
-	// 	Inicializar colas del dispatcher
-	inicializar_queue_pcb(&q_pcb, param_nElementosCola);
-	
-	//test(param_nElementosCola);
-	
-	//pthread_create(scheduler_thread, NULL, &start_clock(), NULL);
-	//pthread_create(pgen_thread, NULL, &start_clock(), NULL);
+	// 	Almacenador de PBS
+	inicializar_estructura(paramStruct.nPool);
+	// 	Indexador de PBS
+	inicializar_linkedList_int(&memPCBs.cola_idx, paramStruct.nPool);
+	// 	Cola del dispatcher
+	inicializar_queue_pcb(&q_pcb, paramStruct.nElementosCola);
+	// Máquina del simulador
+	init_machine(&paramStruct, &matrix3, &machine);
+
 	// Inicializar elementos de sincronización
 	init_clock();
 	init_scheduler();
-	// Lanzar hilos que implementaran los distintos subsistemas
-	// Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
+	init_pgen();
+
+	/*------------------------*
+	 |	Lanzamiento de hilos  |
+	 *------------------------*
+	 Resumen:
+	 Lanzar hilos que implementaran los distintos subsistemas
+	 Realizar la comunicación utilizando memoria compartida y los elementos de sincronización vistos en clase.
+	*/
+		 
 	// Iniciando hilos
 	printf("Iniciando hilos...\n");
 	arrThreads = malloc(sizeof(pthread_t)*NTHREADS);
@@ -80,29 +91,40 @@ int main(int argc, char *argv[]){
 
 	// ----------TIMERS------------
 	// Por ahora el timer recibe dos parámetros, el id y la funcion dedicada
+
+	// Timer de dispatcher
 	arrParametros = malloc(sizeof(short int)*2); // falta liberar memoria
 	((short *)arrParametros)[0] = 0;	 
 	((short *)arrParametros)[1] = DISPATCHER_SCHEDULER_FUNC;
 	pthread_create(&arrThreads[TIMER0_TH], NULL, &start_timer, arrParametros);
-	
+
+	// Timer de pgenerator
+	arrParametros = malloc(sizeof(short int)*2); // falta liberar memoria
+	((short *)arrParametros)[0] = 0;	 
+	((short *)arrParametros)[1] = PGENERATOR_FUNC;
+	pthread_create(&arrThreads[TIMER1_TH], NULL, &start_timer, arrParametros);
+
+
 	// ----------SCHEDULER------------
-	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &scheduleFunc, NULL);
+	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &start_schedule, NULL);
 	
 	// ----------PGenerator------------
+	pthread_create(&arrThreads[PGEN_TH], NULL, &start_pgenerator, NULL);
 
 	printf("Hilos iniciados\n");
+
+	// Esperando a que terminen y recogerlos
+	// Por ahora no sirve de nada
 	for(i = 0; i < NTHREADS; i++)
 	{
 		pthread_join(arrThreads[i], NULL);
 	}
-
-
-	// Liberar recursos asignados
-	free(q_pcb.malloc);
-	free(memPCBs.cola_idx.malloc);	
-	free(memPCBs.malloc);
+	
+	// TODO: forma de que acabe el simulador de forma controlada
 }
 
+// Función auxiliar para asignar el valor del argumento al entero del struct
+// y tener un control de errores muy simple
 void getInt(char * _numero, char letra, int * var){
 	char *fin;
 	long value = strtol(_numero, &fin, 10); 
@@ -118,7 +140,9 @@ void getInt(char * _numero, char letra, int * var){
 	}	
 	*var = (int) value;
 }
-void procesarParametros(int argc, char *argv[]){ 
+
+// Procesar los argumentos y los mete en el struct de parametros
+void procesarParametros(int argc, char *argv[], param_init_t * _params){ 
  	int opt, longindex;
 	opterr = 0;
  	struct option long_options[] = {
@@ -139,19 +163,19 @@ void procesarParametros(int argc, char *argv[]){
 		switch(opt) 
 		{
 		case 'p': /* poolsize */
-			getInt(optarg , 'p', &param_nPool);
+			getInt(optarg , 'p', &_params->nPool);
 			break;
 		case 'q': /* queuesize */
-			getInt(optarg, 'q', &param_nElementosCola);
+			getInt(optarg, 'q', &_params->nElementosCola);
 			break;
 		case 'c': /* n_cpu */
-			getInt(optarg, 'c', &n_cpu);
+			getInt(optarg, 'c', &_params->n_cpu);
 			break;
 		case 'k': /* n_core */
-			getInt(optarg, 'k', &n_core);
+			getInt(optarg, 'k', &_params->n_core);
 			break;
 		case 't': /* n_thread */
-			getInt(optarg, 't', &n_thread);
+			getInt(optarg, 't', &_params->n_thread);
 			break;
 		case 'h': /* -h or --help */
 		case '?':

@@ -1,2 +1,2 @@
 #!/bin/sh
-gcc -o simulador simulador.c queue.c estructuras.c test.c timer.c clock.c scheduler.c pgenerator.c -pthread
+gcc -o simulador simulador.c queue.c estructuras.c test.c timer.c clock.c scheduler.c pgenerator.c randomp.c -pthread

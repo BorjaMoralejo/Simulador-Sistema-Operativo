@@ -3,6 +3,8 @@
     "files.associations": {
         "types.h": "c",
         "getopt.h": "c",
-        "printf.h": "c"
+        "printf.h": "c",
+        "pthread.h": "c",
+        "globals.h": "c"
     }
 }
