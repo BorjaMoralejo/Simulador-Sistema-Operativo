@@ -36,18 +36,18 @@ void * start_pgenerator(void * _args){
         if(pcb != NULL)
         {
             pcb->pid = pid_count++;
-            pcb->ttl = (long) getRandom(1, 30);
+            pcb->ttl = (long) getRandom(paramStruct.ttl_base, paramStruct.ttl_max);
             if (enqueue(&q_pcb, pcb) == 'n')
             {
-                // La cola estaba llena
+                // La cola estaba llena, devolver a la memoria principal
+                putPCB(pcb);
             }else {
                 // Todo bien, hacer lo que sea
             }
         }
 		
-
         // lo añade a la cola?
-        // o se lo pasa a scheduler?
+        // o se lo pasa a scheduler? Por ahora lo pone en la cola comun del scheduler
 
         usleep(10); // funcion para simular que esta haciendo algo
         // cada scheduler tiene su cola de prioridades?        

@@ -35,6 +35,7 @@ void *start_schedule(void *_args)
         printf("Don't mind me, Dispatcher/Scheduler haciendo cosas\n");
         // mira los procesos que tiene fuera de la cola y los mete en la cola o algo
         usleep(10); // funcion para simular que esta haciendo algo
+        
         // Comprobar los procesos que estan en los hilos de la maquina
         // los procesos que hayan acabado sacarlos
         for (cpu = 0; cpu < paramStruct.n_cpu; cpu++)
@@ -61,15 +62,14 @@ void *start_schedule(void *_args)
             // cada scheduler tiene su cola de prioridades?
 
         // Sacar PCB de la cola y meterlo en la máquina
-
         while (machine.idle_threads > 0 && (dequeing = dequeue(&q_pcb)))
         {   
             flag_found = 0;
             contador = 0;
             while(flag_found == 0 && contador <= contador_max)
             {
-                cpu = contador%paramStruct.n_cpu;
-                core = contador%paramStruct.n_core;
+                cpu = contador/(paramStruct.n_core*paramStruct.n_thread);
+                core = (contador%(paramStruct.n_core*paramStruct.n_thread))/(paramStruct.n_thread);
                 thread = contador%paramStruct.n_thread;
                 if(!matrix3[cpu][core][thread])
                 {

@@ -1,14 +1,13 @@
 #include <pthread.h>
 #include <stdio.h>
-#include "defines.h"
 #include <unistd.h>
+#include "globals.h"
+#include "defines.h"
 
 extern pthread_cond_t timer_cond, br_timer_cond;
 extern pthread_mutex_t timer_mtx;
 extern int nDone;
 
-unsigned int tick_freq_dispsched = 3;
-unsigned int tick_freq_pgenerator = 2;
 typedef void(*func_t)(int);
 
 void timer_DispSched(int _time);
@@ -69,7 +68,7 @@ extern pthread_cond_t sched_cond;
 
 void timer_DispSched(int _time){
 
-    if(_time % tick_freq_dispsched == 0) // tick scheduler
+    if(_time % paramStruct.freq_disps_sched == 0) // tick scheduler
     {
         printf("tick dispatcher%d?\n", _time);
 
@@ -89,7 +88,7 @@ extern pthread_cond_t pgen_cond;
 
 void timer_PGenerator(int _time){
     
-    if(_time % tick_freq_pgenerator == 0) // tick pgenerator
+    if(_time % paramStruct.freq_pgen == 0) // tick pgenerator
     {
         printf("tick generator%d?\n", _time);
         // Via libre a generar proceso

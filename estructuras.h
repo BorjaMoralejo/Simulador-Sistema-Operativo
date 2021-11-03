@@ -36,6 +36,17 @@ void putPCB(pcb_t * _elem);
 typedef struct param_init{
 	int nElementosCola;
 	int nPool;
+
+	int clock_manual; 		// TODO: el clock avanza cada vez que el usuario de al enter
+	int clock_retardado; 	// TODO: el clock avanza con el freq_clock_ms
+	int freq_clock_ms; 		// TODO: frecuencia del reloj retardado
+
+	int freq_disps_sched; 	// TODO: frecuencia del dispatcher
+	
+	int freq_pgen; 			// TODO: frecuencia del pgenerator
+	int ttl_base;	 		// TODO: valor base o minimo del time to live
+	int ttl_max;			// TODO: valor maximo del time to live
+
 	int n_cpu;
 	int	n_core;
 	int n_thread;
