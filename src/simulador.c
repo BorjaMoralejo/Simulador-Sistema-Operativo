@@ -17,7 +17,6 @@
 #include "defines.h"
 #include "estructuras.h"
 #include "queue.h"
-//#include "test.h"
 #include "clock.h"
 #include "timer.h"
 #include "scheduler.h"

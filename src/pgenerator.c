@@ -31,6 +31,7 @@ void * start_pgenerator(void * _args){
             pthread_cond_wait(&pgen_cond, &pgen_mtx);
 
         printf("Generando procesos\n");
+
         // genera proceso aleatorio
         pcb = getPCB();
         if(pcb != NULL)

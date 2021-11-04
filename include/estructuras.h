@@ -3,7 +3,7 @@ Este fichero contiene las estructuras de datos usadas por el simulador de sistem
 */
 #ifndef _ESTRUCTURAS_H
 #define _ESTRUCTURAS_H
-
+#include <pthread.h>
 struct pbs;
 struct machine;
 struct cpu;
@@ -32,27 +32,27 @@ void inicializar_linkedList_int(lkdList_int_t *_cola, int _maxElem);
 pcb_t * getPCB();
 void putPCB(pcb_t * _elem);
 
-
+// Estructura que contiene las variables parametrizables del simulador
 typedef struct param_init{
 	int nElementosCola;
 	int nPool;
 
-	int clock_manual; 		// TODO: el clock avanza cada vez que el usuario de al enter
-	int clock_retardado; 	// TODO: el clock avanza con el freq_clock_ms
-	int freq_clock_ms; 		// TODO: frecuencia del reloj retardado
+	int clock_manual; 		// el clock avanza cada vez que el usuario de al enter
+	int clock_retardado; 	// el clock avanza con el freq_clock_ms
+	int freq_clock_ms; 		// frecuencia del reloj retardado
 
-	int freq_disps_sched; 	// TODO: frecuencia del dispatcher
+	int freq_disps_sched; 	// frecuencia del dispatcher
 	
-	int freq_pgen; 			// TODO: frecuencia del pgenerator
-	int ttl_base;	 		// TODO: valor base o minimo del time to live
-	int ttl_max;			// TODO: valor maximo del time to live
+	int freq_pgen; 			// frecuencia del pgenerator
+	int ttl_base;	 		// valor base o minimo del time to live
+	int ttl_max;			// valor maximo del time to live
 
 	int n_cpu;
 	int	n_core;
 	int n_thread;
 }param_init_t;
 
-
+// Estructura principal del simulador, procesos
 typedef struct pcb
 {
 	pid_t2 pid;
@@ -60,6 +60,7 @@ typedef struct pcb
 	ll_node_int_t *indice; // Indice del gestor de memoria
 } pcb_t;
 
+// Estructura de linked list de enteros
 typedef struct lkdList_int
 {
 	int nElem;
@@ -69,19 +70,22 @@ typedef struct lkdList_int
 	ll_node_int_t *last;
 } lkdList_int_t;
 
+// Nodos de la lista de enteros
 typedef struct lkdList_node_int
 {
 	ll_node_int_t *sig;
 	int q_int;
 } ll_node_int_t;
 
+// Cola utilizada por el scheduler
 typedef struct queue_pcb
-{ // Array circular, no nodos
+{ 
 	int nElem;
 	int maxElem;
 	int firstPos;
 	int lastPos;
 	pcb_t **malloc;
+	pthread_mutex_t q_mtx;
 } queue_pcb_t;
 
 typedef struct mempool_pcb

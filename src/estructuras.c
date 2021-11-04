@@ -7,6 +7,9 @@
 #include <stdlib.h>
 
 
+pthread_mutex_t mem_mtx;
+
+
 // Inicializar maquinas
 void init_machine(param_init_t *_params, matrix3_t *_matrix, machine_t *_machine){
 	int i,j,k;
@@ -69,13 +72,12 @@ void inicializar_estructura(int _maxElem){
 	memPCBs.nElem = 0;
 	memPCBs.maxElem = _maxElem;
 	memPCBs.malloc = malloc(sizeof(pcb_t)*_maxElem);
+	pthread_mutex_init(&mem_mtx, NULL);
 }
 
 // Inicializa la lista de la pool principal de pcbs
 void inicializar_linkedList_int(lkdList_int_t *_cola, int _maxElem){
-	#ifdef PRINTF_EN
 	printf("Inicializando cola de integers\n");
-	#endif
 	int i;
 	ll_node_int_t *arr_nodos;
 
@@ -102,6 +104,7 @@ void inicializar_linkedList_int(lkdList_int_t *_cola, int _maxElem){
 
 // Saca un pcb de la pool principal
 pcb_t * getPCB(){
+	pthread_mutex_lock(&mem_mtx);
 	pcb_t *_ret;
 	lkdList_int_t *_cola_idx = &memPCBs.cola_idx;
 
@@ -113,13 +116,17 @@ pcb_t * getPCB(){
 	_ret = &memPCBs.malloc[_indice->q_int];
 	_ret->indice = _indice;
 	_indice->sig = NULL;
+	pthread_mutex_unlock(&mem_mtx);
+
 	return _ret;
 }
 
 // devuelve el pcb a la pool principal y lo coloca en la ultima posicion
 void putPCB(pcb_t * _elem){
+	pthread_mutex_lock(&mem_mtx);
 	ll_node_int_t * _ultimo = memPCBs.cola_idx.last;
 	memPCBs.cola_idx.last = _elem->indice;
 	_ultimo->sig = _elem->indice;
 	memPCBs.nElem++;
+	pthread_mutex_unlock(&mem_mtx);
 }

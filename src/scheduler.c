@@ -5,6 +5,8 @@
 #include "globals.h"
 #include "estructuras.h"
 #include "queue.h"
+
+
 int sched_flag = 0;
 pthread_mutex_t sched_mtx;
 pthread_cond_t sched_cond;
@@ -47,6 +49,7 @@ void *start_schedule(void *_args)
                     {
                         printf("Sacando un proceso por finalización!\n");
                         putPCB(*p_hilo);
+
                         // marcar como liberado y notificar a la máquina que tiene un hilo libre
                         *p_hilo = NULL;
                         //hilo = *(machine.thread_matrix)[cpu][core][thread];
