@@ -1,8 +1,6 @@
 /* defines.h
 Este fichero contiene los defines del proyecto: Simulador de Sistema Operativo
 */
-//mempool_t memPCBs;
-
 #ifndef _DEFINES_H
 #define _DEFINES_H 1
 
@@ -22,7 +20,6 @@ Este fichero contiene los defines del proyecto: Simulador de Sistema Operativo
 
 // Simulador.c
 enum enum_threadName {CLOCK_TH, TIMER0_TH, TIMER1_TH, SCHEDULER_TH, PGEN_TH, NTHREADS};
-
 
 // Timer
 enum enum_timerFuncTypes {DISPATCHER_SCHEDULER_FUNC, PGENERATOR_FUNC};
