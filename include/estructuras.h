@@ -52,12 +52,15 @@ typedef struct param_init{
 	int n_thread;
 }param_init_t;
 
+// Estructura para las estadisticas
+
 // Estructura principal del simulador, procesos
 typedef struct pcb
 {
 	pid_t2 pid;
 	long int ttl;
-	ll_node_int_t *indice; // Indice del gestor de memoria
+	ll_node_int_t *indice; // Indice del gestor de memoria, no esta relacionado con la simulación
+	int nice;
 } pcb_t;
 
 // Estructura de linked list de enteros
