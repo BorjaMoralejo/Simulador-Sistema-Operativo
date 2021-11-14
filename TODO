@@ -1,12 +1,12 @@
-- [ ] Arbol, la estructura de los procesos del usuario del ready
+- |[/]| Arbol, la estructura de los procesos del usuario del ready
 - [/] RT_Struct, la estructura de tiempo real de los ready
 
-- [ ] Dispatcher, las funciones definidas en .h
-- [ ] Scheduler, separar las funciones del dispatcher y que tenga en cuenta
+- [/] Scheduler, separar las funciones del dispatcher
+- [/] Dispatcher, las funciones definidas en .h
 - [ ] Varios scheduler por core
     - [ ] Funciones que crean "objetos" scheduler
     - [ ] Scheduler maestro y esclavo
-    - [ ] Colas de procesos nuevos y bloqueados por cada scheduler
+    - [/] Colas de rt_struct, arbol ,procesos nuevos y bloqueados por cada scheduler
 
 - [ ] Parametrizacion
 - [ ] Analisis de estadisicas

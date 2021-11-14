@@ -6,6 +6,11 @@
         "printf.h": "c",
         "pthread.h": "c",
         "globals.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "arbol.h": "c",
+        "estructuras.h": "c",
+        "scheduler.h": "c",
+        "dispatcher.h": "c",
+        "rt_struct.h": "c"
     }
 }

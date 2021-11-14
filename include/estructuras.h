@@ -4,11 +4,11 @@ Este fichero contiene las estructuras de datos usadas por el simulador de sistem
 #ifndef _ESTRUCTURAS_H
 #define _ESTRUCTURAS_H
 #include <pthread.h>
-struct pbs;
-struct machine;
-struct cpu;
-struct core;
-struct thread;
+
+#define PCB_STATE_IDLE 		0
+#define PCB_STATE_RUNNING 	1
+#define PCB_STATE_BLOCKED 	2
+#define PCB_STATE_DEAD 		3
 
 typedef int pid_t2;
 typedef struct pcb pcb_t;
@@ -57,10 +57,13 @@ typedef struct param_init{
 // Estructura principal del simulador, procesos
 typedef struct pcb
 {
+	ll_node_int_t *indice; // Indice del gestor de memoria, no esta relacionado con la simulación
 	pid_t2 pid;
 	long int ttl;
-	ll_node_int_t *indice; // Indice del gestor de memoria, no esta relacionado con la simulación
+	char state;
 	int nice;
+	long int q;
+	long int blocked;
 } pcb_t;
 
 // Estructura de linked list de enteros
