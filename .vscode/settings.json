@@ -11,6 +11,7 @@
         "estructuras.h": "c",
         "scheduler.h": "c",
         "dispatcher.h": "c",
-        "rt_struct.h": "c"
+        "rt_struct.h": "c",
+        "queue.h": "c"
     }
 }

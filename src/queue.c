@@ -15,7 +15,7 @@ extern pthread_mutex_t mem_mutex;
 
 void inicializar_queue_pcb(queue_pcb_t * _cola, int _maxElem){
 	int i;
-	printf("Inicializando cola de pcbs\n");
+	//printf("Inicializando cola de pcbs\n");
 	// Se usa para inicializar las colas de los dispatchers/schedulers
 	_cola->nElem = 0;
 	_cola->maxElem = _maxElem;
@@ -36,7 +36,7 @@ char enqueue(queue_pcb_t *_q, pcb_t *_elem){
 		return 'n'; // está llena la cola
 	}
 	_q->malloc[_q->lastPos] = _elem;
-	printf("colocado en %d %ld \n",_q->lastPos, (long int) &_q->malloc[_q->lastPos]);
+	//printf("colocado en %d %ld \n",_q->lastPos, (long int) &_q->malloc[_q->lastPos]);
 	_q->lastPos = (_q->lastPos +1) % _q->maxElem;
 	_q->nElem++;
 	pthread_mutex_unlock(&_q->q_mtx);
@@ -45,14 +45,14 @@ char enqueue(queue_pcb_t *_q, pcb_t *_elem){
 pcb_t * dequeue(queue_pcb_t *_cola){
 	pthread_mutex_lock(&_cola->q_mtx);
 	if(_cola->nElem == 0){
-		printf("COLA VACIA\n");
+		//printf("COLA VACIA\n");
 		pthread_mutex_unlock(&_cola->q_mtx);
 		
 		return NULL;
 	}
 	pcb_t * _ret = _cola->malloc[_cola->firstPos];
 	_cola->nElem--;
-	printf("Pillando de %d %ld \n",_cola->firstPos,(long int) &_cola->malloc[_cola->firstPos]);
+	//printf("Pillando de %d %ld \n",_cola->firstPos,(long int) &_cola->malloc[_cola->firstPos]);
 	_cola->firstPos = (_cola->firstPos +1) % _cola->maxElem;
 	pthread_mutex_unlock(&_cola->q_mtx);
 

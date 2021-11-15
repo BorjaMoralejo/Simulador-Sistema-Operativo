@@ -1,4 +1,4 @@
-#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "estructuras.h"
 #include "list.h"
@@ -14,7 +14,7 @@ void init_list (list_pcb_t * _list, int _maxElem){
 char list_addPCB (list_pcb_t * _list, pcb_t * _elem){
     if (_list->last == NULL) // Es el primero
     {
-        _list->last = _list->list_nodes[_list->nElem++];
+        _list->last = &_list->list_nodes[_list->nElem++];
         _list->first = _list->last;
         _list->last->next = NULL;
         _list->last->prev = NULL;
@@ -27,7 +27,7 @@ char list_addPCB (list_pcb_t * _list, pcb_t * _elem){
             fprintf(stderr, "La lista está llena\n");
             return 1;
         }
-        _list->last->next = _list->list_nodes[_list->nElem++];
+        _list->last->next = &_list->list_nodes[_list->nElem++];
         _list->last->next->prev = _list->last;
         _list->last = _list->last->next;
         _list->last->next = NULL;

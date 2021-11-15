@@ -4,7 +4,7 @@ OBJDIR = obj
 INCDIR = include
 CFLAGS = -I$(INCDIR) -pthread
 
-objs = $(addprefix $(OBJDIR)/, simulador.o clock.o timer.o pgenerator.o scheduler.o estructuras.o randomp.o queue.o rt_struct.o list.o)
+objs = $(addprefix $(OBJDIR)/, simulador.o clock.o timer.o pgenerator.o scheduler.o estructuras.o randomp.o queue.o rt_struct.o list.o dispatcher.o)
 
 vpath %.h $(INCDIR)
 vpath %.o $(OBJDIR)
@@ -34,5 +34,7 @@ $(OBJDIR)/timer.o: timer.c globals.h estructuras.h defines.h
 	gcc -c $(CFLAGS) -o $@ $<
 $(OBJDIR)/rt_struct.o: rt_struct.c queue.h estructuras.h
 	gcc -c $(CFLAGS) -o $@ $<
-$(OBJDIR)/lista.o: list.c list.h estructuras.h
+$(OBJDIR)/list.o: list.c list.h estructuras.h
+	gcc -c $(CFLAGS) -o $@ $<
+$(OBJDIR)/dispatcher.o: dispatcher.c dispatcher.h estructuras.h rt_struct.h queue.h list.h scheduler.h globals.h
 	gcc -c $(CFLAGS) -o $@ $<

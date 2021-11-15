@@ -5,30 +5,33 @@
 #include "queue.h"
 #include "list.h"
 #include "scheduler.h"
+#include "globals.h"
 
 
 // Forward declaring
-void return_pcb(pcb_t *_expired_pcb);
+void return_pcb(sched_disp_data_t * _sched_d_d, pcb_t *_expired_pcb);
 pcb_t * scheduler_get_next();
 
-void dispatcher_remove(sched_disp_data_t * sched_d_d){
+void dispatcher(sched_disp_data_t * sched_d_d){
+    printf("Dispatcher haciendo cosas %d \n\n", sched_d_d->id);
     int thread;
-    pcb_t **p_hilo, *next ;
-    core_t * assigned_core;
+    pcb_t **p_hilo, *next;
+    core_t * assigned_core = sched_d_d->assigned_core;
+    
     int context_change = 0;
-
     // Comprobar los procesos que estan en los hilos de la maquina
     // los procesos que hayan acabado sacarlos
     for (thread = 0; thread < paramStruct.n_thread; thread++)
     {
         // Pillando y reseteando variables cada bucle
         context_change = 0;
-        p_hilo = assigned_core->threads[thread].enProceso;
 
+        p_hilo = assigned_core->threads[thread].enProceso;
+        //printf("Trabajando con Hilo %d \n", thread);
         // Hay un proceso en este hilo, comprobar si ha terminado o si se ha quedado sin quantum
         if ( (*p_hilo) != NULL ) 
         {
-
+            //printf("Hilo no es null \n");
             // Según la razón de entrada determinar si le toca cambiar de contexto o no
             if ( (*p_hilo)->ttl <= 0 )                          // Ha terminado
             {
@@ -43,13 +46,13 @@ void dispatcher_remove(sched_disp_data_t * sched_d_d){
                 context_change = 1;
                 printf("Sacando un proceso por quantum!\n");
                 (*p_hilo)->state = PCB_STATE_IDLE;
-                return_pcb(*p_hilo);
+                return_pcb(sched_d_d, *p_hilo);
 
             }else if ( (*p_hilo)->state == PCB_STATE_BLOCKED )  // Se ha autobloqueado
             {
                 context_change = 1;
                 printf("Sacando un proceso por autobloquearse!\n");
-                if(list_addPCB(sched_d_d->blocked_list, (*p_hilo)) != 0)
+                if(list_addPCB(&sched_d_d->blocked_list, (*p_hilo)) != 0)
                 {
                     fprintf(stderr, "La cola de pcb bloqueados está llena, a memoria principal \n");
                     putPCB((*p_hilo)); // Lo manda de vuelta a la memoria principal
@@ -63,7 +66,7 @@ void dispatcher_remove(sched_disp_data_t * sched_d_d){
             if(context_change == 1)
             {
 
-                next = scheduler_get_next();
+                next = scheduler_get_next(sched_d_d);
 
                 if (next == NULL)           // No hay siguiente, se vacia el hilo
                 {
@@ -82,7 +85,8 @@ void dispatcher_remove(sched_disp_data_t * sched_d_d){
             }
         }else if ((*p_hilo) == NULL)    // El hilo estaba vacio, mete un PCB
         {
-            next = scheduler_get_next();
+            printf("Hilo es null, cogiendo un PCB \n");
+            next = scheduler_get_next(sched_d_d);
             if( next != NULL)
                 context_change = 1;
         }
@@ -90,23 +94,34 @@ void dispatcher_remove(sched_disp_data_t * sched_d_d){
 
         if(context_change == 1)
         {
+            printf("Cambiando de contexto \n");
             // Cambio de contexto del proceso anterior
             if((*p_hilo) != NULL && (*p_hilo)->state != PCB_STATE_DEAD)
             {
                 // Guardando estado de la cpu
+            }else 
+            {
+                machine.idle_threads--;
+                assigned_core->idle_threads--;
+                assigned_core->cpu->idle_threads--;
             }
             *p_hilo = next;           
             // Poner contexto de este proceso nuevo            
+            printf("Asignando proceso en %2d %2d %2d \n", sched_d_d->cpu_id, sched_d_d->core_id, thread);
+
+
         }
     }
+    printf("Dispatcher ha terminado de hacer cosas %d\n\n", sched_d_d->id);
+
 }
 
 
 
-void return_pcb(pcb_t *_expired_pcb){
-    rt_struct_t * rt;
-    rt_struct_t * rt_expired;
-    tree_t * arbol;
+void return_pcb(sched_disp_data_t * _sched_d_d, pcb_t *_expired_pcb){
+    rt_struct_t * rt = _sched_d_d->rt;
+    rt_struct_t * rt_expired = _sched_d_d->rt_expired;
+   // tree_t * arbol;
     
     // Arbol, no implementado pero casi
     /*
@@ -124,7 +139,7 @@ void return_pcb(pcb_t *_expired_pcb){
         if(_expired_pcb->nice != rt_expired->size)
             _expired_pcb->nice++;
 
-        if ( rt_addPCB(rt_struct_t * rt_expired, pcb_t *_expired_pcb) != 'y') 
+        if ( rt_addPCB( rt_expired, _expired_pcb) != 'y') 
         {
             fprintf(stderr, "Al parecer esa cola estaba llena o algo, así que a Brasil que te vas \n");
             putPCB(_expired_pcb); // Lo manda de vuelta a la memoria principal

@@ -47,6 +47,11 @@ typedef struct param_init{
 	int ttl_base;	 		// valor base o minimo del time to live
 	int ttl_max;			// valor maximo del time to live
 
+	int blocked_list_size;
+	int freq_reschedule;
+	int quantum_per_prio;
+	int max_prio;
+
 	int n_cpu;
 	int	n_core;
 	int n_thread;
@@ -61,6 +66,7 @@ typedef struct pcb
 	pid_t2 pid;
 	long int ttl;
 	char state;
+	int affinity;
 	int nice;
 	long int q;
 	long int blocked;

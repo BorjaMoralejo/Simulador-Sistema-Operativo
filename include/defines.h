@@ -18,6 +18,11 @@ Este fichero contiene los defines del proyecto: Simulador de Sistema Operativo
 #define DEFAULT_CORE 2
 #define DEFAULT_THREAD 1
 
+#define DEFAULT_BLOCKED_LIST_SIZE  30
+#define DEFAULT_FREQ_RESCHED 100
+#define DEFAULT_Q_PER_PRIORITY 10
+#define DEFAULT_MAX_PRIO 30
+
 // Simulador.c
 enum enum_threadName {CLOCK_TH, TIMER0_TH, TIMER1_TH, SCHEDULER_TH, PGEN_TH, NTHREADS};
 

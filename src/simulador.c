@@ -35,7 +35,7 @@ machine_t machine;
 void procesarParametros(int argc, char *argv[], param_init_t *_params);
 
 int main(int argc, char *argv[]){
-	// Declaraciones
+	// Declaraciones de variables
 	pthread_t* arrThreads;
 	void *arrParametros;
 	int i;
@@ -46,6 +46,9 @@ int main(int argc, char *argv[]){
 	machine_t mach;
 	machine = mach;
 
+	// Declaraciones de variables de elementos
+	sched_disp_data_t * sched_arr;
+	int n_slaves;
 	// Poniendo los valores default de las variables
 	paramStruct.nPool = DEFAULT_POOLSIZE;
 	paramStruct.nElementosCola = DEFAULT_QUEUESIZE; 
@@ -59,6 +62,11 @@ int main(int argc, char *argv[]){
 	paramStruct.freq_pgen = DEFAULT_FREQ_PGEN;
 	paramStruct.ttl_base = DEFAULT_TTL_BASE;
 	paramStruct.ttl_max = DEFAULT_TTL_MAX;
+
+	paramStruct.blocked_list_size = DEFAULT_BLOCKED_LIST_SIZE;
+	paramStruct.freq_reschedule = DEFAULT_FREQ_DISP_SCHED;
+	paramStruct.quantum_per_prio = DEFAULT_Q_PER_PRIORITY;
+	paramStruct.max_prio = DEFAULT_MAX_PRIO;
 
 	// Tratar parámetros
 	procesarParametros(argc, argv, &paramStruct);
@@ -78,7 +86,7 @@ int main(int argc, char *argv[]){
 
 	// Inicializar elementos de sincronización
 	init_clock();
-	init_scheduler();
+	init_scheduler(&sched_arr);
 	init_pgen();
 
 	/*------------------------*
@@ -91,7 +99,8 @@ int main(int argc, char *argv[]){
 		 
 	// Iniciando hilos
 	printf("Iniciando hilos...\n");
-	arrThreads = malloc(sizeof(pthread_t)*NTHREADS);
+	n_slaves = paramStruct.n_cpu*paramStruct.n_core;
+	arrThreads = malloc(sizeof(pthread_t)*(NTHREADS + n_slaves));
 	// ----------CLOCK------------
 	pthread_create(&arrThreads[CLOCK_TH], NULL, &start_clock, NULL);
 
@@ -111,8 +120,13 @@ int main(int argc, char *argv[]){
 	pthread_create(&arrThreads[TIMER1_TH], NULL, &start_timer, arrParametros);
 
 
-	// ----------SCHEDULER------------
-	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &start_schedule, NULL);
+	// ----------SCHEDULER MAESTRO------------
+	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &start_schedule_master, sched_arr);
+	// ----------SCHEDULERS ESCLAVOS------------
+
+	for ( i = 0; i < n_slaves; i++ )
+		pthread_create(&arrThreads[NTHREADS + i], NULL, &start_schedule_slave, &sched_arr[i]);
+
 	
 	// ----------PGenerator------------
 	pthread_create(&arrThreads[PGEN_TH], NULL, &start_pgenerator, NULL);
@@ -121,7 +135,7 @@ int main(int argc, char *argv[]){
 
 	// Esperando a que terminen y recogerlos
 	// Por ahora no sirve de nada
-	for(i = 0; i < NTHREADS; i++)
+	for(i = 0; i < NTHREADS + n_slaves; i++)
 	{
 		pthread_join(arrThreads[i], NULL);
 	}

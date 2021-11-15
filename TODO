@@ -4,9 +4,14 @@
 - [/] Scheduler, separar las funciones del dispatcher
 - [/] Dispatcher, las funciones definidas en .h
 - [ ] Varios scheduler por core
-    - [ ] Funciones que crean "objetos" scheduler
-    - [ ] Scheduler maestro y esclavo
-    - [/] Colas de rt_struct, arbol ,procesos nuevos y bloqueados por cada scheduler
+    - [/] Scheduler maestro y esclavo
+        - [/] Repartir tareas
+        - [/] Diferenciacion entre master y slave
+        - [/] Funciones que crean "objetos" scheduler
+        - [/] Control de pulso utilizando a master
+    - [ ] Pgenerator avanzado (crear varios, afinidad)
+    - [/] Colas de rt_struct, arbol, procesos nuevos y bloqueados por cada scheduler
 
 - [ ] Parametrizacion
 - [ ] Analisis de estadisicas
+- [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
