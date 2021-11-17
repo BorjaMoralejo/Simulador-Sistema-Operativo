@@ -3,7 +3,7 @@
  * ----------------------------------------------
  *  Parte 1 de práctica de la asignatura SESO
  *	Autor: Borja Moralejo Tobajas
- *	Fecha: 1 de Octubre de 2021s
+ *	Fecha: 1 de Octubre de 2021
  * ---------------------------------------------- */
 
 #include <stdlib.h>
@@ -64,9 +64,17 @@ int main(int argc, char *argv[]){
 	paramStruct.ttl_max = DEFAULT_TTL_MAX;
 
 	paramStruct.blocked_list_size = DEFAULT_BLOCKED_LIST_SIZE;
+	paramStruct.block_chance = DEFAULT_BLOCK_CHANCE;
+	paramStruct.max_blocked_time = DEFAULT_MAX_BLOCKED_TIME;
+	paramStruct.random_priority = DEFAULT_RANDOM_PRIORITY;
+	paramStruct.random_affinity = DEFAULT_RANDOM_AFFINITY;
 	paramStruct.freq_reschedule = DEFAULT_FREQ_DISP_SCHED;
 	paramStruct.quantum_per_prio = DEFAULT_Q_PER_PRIORITY;
 	paramStruct.max_prio = DEFAULT_MAX_PRIO;
+	paramStruct.pcb_generated = DEFAULT_PCB_GENERATED;
+
+	paramStruct.politica_scheduler_master = DEFAULT_MASTER_SCHEDULER_BEHAVIOUR;
+	paramStruct.politica_scheduler_slave = 0;
 
 	// Tratar parámetros
 	procesarParametros(argc, argv, &paramStruct);

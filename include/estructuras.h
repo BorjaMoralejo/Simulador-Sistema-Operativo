@@ -47,10 +47,19 @@ typedef struct param_init{
 	int ttl_base;	 		// valor base o minimo del time to live
 	int ttl_max;			// valor maximo del time to live
 
-	int blocked_list_size;
-	int freq_reschedule;
-	int quantum_per_prio;
-	int max_prio;
+	int blocked_list_size;	// Tamaño maximo de la lista de bloqueado
+	int block_chance;		// Probabilidad de que se bloquee, más alto, mas raro de que eso ocurra
+	int max_blocked_time;	// Numero de ciclos maximos que se quedan bloqueados los procesos
+	int freq_reschedule;	// Frecuencia a la que se recalcula las colas de prioridades
+	int quantum_per_prio;	// Cantidad de quantum por cada nivel de priorida. Escala linealmente
+	int max_prio;			// Nivel de prioridad máximo para la tabla de prioridades.
+	int random_priority;	// Nivel máximo de prioridad que se puede asignar de forma aleatoria. Desde 0 hasta valor introducido
+	int random_affinity;	// Poner afinidad aleatoria o no
+	int pcb_generated;	// Numero de procesos generados por tick de PGenerator
+
+	int politica_scheduler_master; // RoundRobin, affinity
+	// TODO:
+	int politica_scheduler_slave;	// Degradacion, degradacion paulatina
 
 	int n_cpu;
 	int	n_core;
@@ -67,7 +76,7 @@ typedef struct pcb
 	long int ttl;
 	char state;
 	int affinity;
-	int nice;
+	int priority;
 	long int q;
 	long int blocked;
 } pcb_t;

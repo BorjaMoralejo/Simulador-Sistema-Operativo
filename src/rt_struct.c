@@ -28,10 +28,9 @@ void init_rt_struct(rt_struct_t * _rt, int _n_of_queues){
 
 // Mete un elemento PCB en la cola de la misma prioridad que el NICE del PCB
 char rt_addPCB(rt_struct_t * _rt, pcb_t *_pcb){
-    
-    char ret = enqueue(&_rt->queues[_pcb->nice], _pcb);
-    if(ret == 'y')
-        _rt->bitmap_queue |= 0x0001 << _pcb->nice; 
+    char ret = enqueue(&_rt->queues[_pcb->priority], _pcb);
+    if(ret == 0)
+        _rt->bitmap_queue |= 0x0001 << _pcb->priority; 
     return ret;
 }
 
@@ -44,13 +43,13 @@ pcb_t * takeFromQueue(rt_struct_t * _rt, int _qIndx){
         fprintf(stderr, "Out of bounds %d\n", _qIndx);
         return NULL;
     }
-
     ret = dequeue(&_rt->queues[_qIndx]);
-    if ( _rt->queues[_qIndx].nElem == 0)
+    if ( _rt->queues[_qIndx].nElem == 0){
         _rt->bitmap_queue &=  ~(0 | (0x0001 << _qIndx)); // Poniendo bitmap como vacio
+        if ( ret == NULL )
+            fprintf(stderr, "De alguna forma ha llegado hasta aquí pidiendo un elemento pero no hay elementos en la cola%d\n", _qIndx);
+    }
 
-    if ( ret == NULL )
-        fprintf(stderr, "De alguna forma ha llegado hasta aquí pidiendo un elemento pero no hay elementos en la cola\n");
 
     return ret;
 }

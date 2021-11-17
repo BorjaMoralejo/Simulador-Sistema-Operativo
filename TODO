@@ -1,17 +1,23 @@
 - |[/]| Arbol, la estructura de los procesos del usuario del ready
-- [/] RT_Struct, la estructura de tiempo real de los ready
+- [X] RT_Struct, la estructura de tiempo real de los ready
 
-- [/] Scheduler, separar las funciones del dispatcher
-- [/] Dispatcher, las funciones definidas en .h
-- [ ] Varios scheduler por core
-    - [/] Scheduler maestro y esclavo
-        - [/] Repartir tareas
-        - [/] Diferenciacion entre master y slave
-        - [/] Funciones que crean "objetos" scheduler
-        - [/] Control de pulso utilizando a master
-    - [ ] Pgenerator avanzado (crear varios, afinidad)
-    - [/] Colas de rt_struct, arbol, procesos nuevos y bloqueados por cada scheduler
+- [X] Scheduler, separar las funciones del dispatcher
+- [X] Dispatcher, las funciones definidas en .h
+- [X] Varios scheduler por core
+    - [X] Scheduler maestro y esclavo
+        - [X] Repartir tareas (falta comprobar afinidad)
+        - [X] Diferenciacion entre master y slave
+        - [X] Funciones que crean "objetos" scheduler
+        - [X] Control de pulso utilizando a master
+        - [X] Quantum
+        - [X] Autobloqueo
+        - [X] Afinidad
+    - [X] Pgenerator avanzado (crear varios, afinidad)
+    - [X] Colas de rt_struct, arbol, procesos nuevos y bloqueados por cada scheduler
 
-- [ ] Parametrizacion
+- [ ] Parametrizacion -> Quantum, Probabilidad de autobloqueo, Frecuencia de reschedule, Lo de la afinidad
 - [ ] Analisis de estadisicas
 - [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
+- [ ] Memoria...
+Mejoras posibles:
+Productor Consumidor en las colas de scheduler maestro a esclavos y de pgenerator a scheduler principal

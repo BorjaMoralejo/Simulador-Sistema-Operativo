@@ -18,9 +18,9 @@ void init_pgen(){
 }
 
 void * start_pgenerator(void * _args){    
-    pid_t2 pid_count = 1;
+    pid_t2 pid_count = 0;
     pcb_t * pcb;
-    
+    int i;    
 
     while (1)
     {
@@ -32,26 +32,34 @@ void * start_pgenerator(void * _args){
 
         printf("Generando procesos\n");
 
-        // genera proceso aleatorio
-        pcb = getPCB();
-        if(pcb != NULL)
+        // Coge proceso de la memoria del simulador (no es parte de la simulación)
+        for ( i = 0; i < paramStruct.pcb_generated; i++)
         {
-            pcb->pid = pid_count++;
-            pcb->ttl = (long) getRandom(paramStruct.ttl_base, paramStruct.ttl_max);
-            if (enqueue(&q_pcb, pcb) == 'n')
+            pcb = getPCB();
+            if(pcb != NULL)
             {
-                // La cola estaba llena, devolver a la memoria principal
-                putPCB(pcb);
-            }else {
-                // Todo bien, hacer lo que sea
+                if (paramStruct.random_priority == -1)
+                    pcb->priority = 0;
+                else pcb->priority = getRandom(0, paramStruct.random_priority);
+
+                if (paramStruct.random_affinity)
+                    pcb->affinity = getRandom(0, paramStruct.n_core)+getRandom(0, paramStruct.n_cpu)*paramStruct.n_core;
+                else 
+                    pcb->affinity = -1;
+
+                pcb->pid = pid_count++;
+                pcb->ttl = (long) getRandom(paramStruct.ttl_base, paramStruct.ttl_max);
+
+                // Se lo pasa al scheduler maestro
+                if (enqueue(&q_pcb, pcb) == 1)
+                {
+                    // La cola estaba llena, devolver a la memoria principal
+                    putPCB(pcb);
+                }else {
+                    // Todo bien, hacer lo que sea
+                }
             }
         }
-		
-        // lo añade a la cola?
-        // o se lo pasa a scheduler? Por ahora lo pone en la cola comun del scheduler
-
-        usleep(10); // funcion para simular que esta haciendo algo
-        // cada scheduler tiene su cola de prioridades?        
 
         pthread_mutex_unlock(&pgen_mtx);
     }

@@ -124,16 +124,20 @@ pcb_t * getPCB(){
 
 	// Coge índice libre de mempool y avanza la lista
 	ll_node_int_t * _indice = _cola_idx->first;
-        _cola_idx->first = _indice->sig;
 
-	// Coge el pcb que le toca
-	_ret = &memPCBs.malloc[_indice->q_int];
+	if (_indice != NULL )
+	{
+		_cola_idx->first = _indice->sig;
+
+		// Coge el pcb que le toca
+		_ret = &memPCBs.malloc[_indice->q_int];
 
 
-	// Guarda el nodo para reutilizarlo
-	_ret->indice = _indice;
-	_indice->sig = NULL;
-
+		// Guarda el nodo para reutilizarlo
+		_ret->indice = _indice;
+		_ret->priority = 0;
+		_indice->sig = NULL;
+	}
 
 	pthread_mutex_unlock(&mem_mtx);
 
@@ -146,7 +150,10 @@ void putPCB(pcb_t * _elem){
 
 	ll_node_int_t * _ultimo = memPCBs.cola_idx.last;
 	memPCBs.cola_idx.last = _elem->indice;
-	_ultimo->sig = _elem->indice;
+	if ( _ultimo != NULL)
+	{
+		_ultimo->sig = _elem->indice;
+	}
 	memPCBs.nElem++;
 	
 	pthread_mutex_unlock(&mem_mtx);

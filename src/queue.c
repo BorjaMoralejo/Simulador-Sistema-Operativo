@@ -33,14 +33,14 @@ char enqueue(queue_pcb_t *_q, pcb_t *_elem){
 	if(_q->nElem >= _q->maxElem){
 		printf("Ojo, la cola está llena! %d \n", _q->nElem);
 		pthread_mutex_unlock(&_q->q_mtx);
-		return 'n'; // está llena la cola
+		return 1; // está llena la cola
 	}
 	_q->malloc[_q->lastPos] = _elem;
 	//printf("colocado en %d %ld \n",_q->lastPos, (long int) &_q->malloc[_q->lastPos]);
 	_q->lastPos = (_q->lastPos +1) % _q->maxElem;
 	_q->nElem++;
 	pthread_mutex_unlock(&_q->q_mtx);
-	return 'y';
+	return 0;
 }
 pcb_t * dequeue(queue_pcb_t *_cola){
 	pthread_mutex_lock(&_cola->q_mtx);
@@ -50,10 +50,12 @@ pcb_t * dequeue(queue_pcb_t *_cola){
 		
 		return NULL;
 	}
+
 	pcb_t * _ret = _cola->malloc[_cola->firstPos];
 	_cola->nElem--;
 	//printf("Pillando de %d %ld \n",_cola->firstPos,(long int) &_cola->malloc[_cola->firstPos]);
 	_cola->firstPos = (_cola->firstPos +1) % _cola->maxElem;
+
 	pthread_mutex_unlock(&_cola->q_mtx);
 
 	return _ret;
