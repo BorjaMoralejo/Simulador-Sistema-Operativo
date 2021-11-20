@@ -51,15 +51,13 @@ typedef struct param_init{
 	int block_chance;		// Probabilidad de que se bloquee, más alto, mas raro de que eso ocurra
 	int max_blocked_time;	// Numero de ciclos maximos que se quedan bloqueados los procesos
 	int freq_reschedule;	// Frecuencia a la que se recalcula las colas de prioridades
-	int quantum_per_prio;	// Cantidad de quantum por cada nivel de priorida. Escala linealmente
+	int quantum_per_prio;	// Cantidad de quantum por cada nivel de prioridad. Escala linealmente
 	int max_prio;			// Nivel de prioridad máximo para la tabla de prioridades.
 	int random_priority;	// Nivel máximo de prioridad que se puede asignar de forma aleatoria. Desde 0 hasta valor introducido
 	int random_affinity;	// Poner afinidad aleatoria o no
-	int pcb_generated;	// Numero de procesos generados por tick de PGenerator
+	int pcb_generated;		// Numero de procesos generados por tick de PGenerator
 
 	int politica_scheduler_master; // RoundRobin, affinity
-	// TODO:
-	int politica_scheduler_slave;	// Degradacion, degradacion paulatina
 
 	int n_cpu;
 	int	n_core;

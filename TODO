@@ -15,9 +15,9 @@
     - [X] Pgenerator avanzado (crear varios, afinidad)
     - [X] Colas de rt_struct, arbol, procesos nuevos y bloqueados por cada scheduler
 
-- [ ] Parametrizacion -> Quantum, Probabilidad de autobloqueo, Frecuencia de reschedule, Lo de la afinidad
+- [X] Parametrizacion -> Quantum, Probabilidad de autobloqueo, Frecuencia de reschedule, Lo de la afinidad
 - [ ] Analisis de estadisicas
 - [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
-- [ ] Memoria...
+- [X] Memoria...
 Mejoras posibles:
 Productor Consumidor en las colas de scheduler maestro a esclavos y de pgenerator a scheduler principal
