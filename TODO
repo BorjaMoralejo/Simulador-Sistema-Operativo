@@ -1,21 +1,41 @@
-- |[/]| Arbol, la estructura de los procesos del usuario del ready
-- [X] RT_Struct, la estructura de tiempo real de los ready
+- [ ] Loader
+	- [ ] Reemplazar Pgenerator
+		- [ ] Prioridades
+		- [ ] Afinidad
+- [ ] Machine
+	- [ ] MMU
+	- [ ] TLB
+	- [ ] PTBR
+	- [ ] Registros RI PC y 16 registros generales
+	- [ ] Juego de instrucciones
+		- [ ] ld, st, add, exit
+			- [ ] Implementacion de exit
+			- [ ] Fetch 
+			- [ ] Decodificar ld, st, add, exit
+			- [ ] Busqueda de operandos (carga y guardado) st, add y ld
+			- [ ] Operar (exit saca del procesador)
+			- [ ] Escribir resultados ld y add en registros y st en memoria
+- [ ] Memoria fisica
+	- [ ] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
+	- [ ] Pagina de 256 bytes
+	- [ ] Espacio reservado de memoria 0x000000 0x3FFFFF
+		- [ ] Politica de meter (mirar tema 3)
+	- [ ] Cargar programas en memoria
+	- [ ] Descargar programas en memoria
+- [ ] Memoria secundaria
+	- [ ] Cargar programas a simular en el simulador
+		- [ ] Pillar pcb
+		- [ ] Tabla de paginas que se guarda en pgb
+		- [ ] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
+	
+- [ ] PCB
+	- [ ]  estructura mm
+		- [ ] code direccion virtual
+		- [ ] data direccion virtual
+		- [ ] pgb  direccion fisica 
+	- [ ] status por cambio de contexto
+ORDEN: Memoria, Maquina con componentes, loader y secundario
 
-- [X] Scheduler, separar las funciones del dispatcher
-- [X] Dispatcher, las funciones definidas en .h
-- [X] Varios scheduler por core
-    - [X] Scheduler maestro y esclavo
-        - [X] Repartir tareas (falta comprobar afinidad)
-        - [X] Diferenciacion entre master y slave
-        - [X] Funciones que crean "objetos" scheduler
-        - [X] Control de pulso utilizando a master
-        - [X] Quantum
-        - [X] Autobloqueo
-        - [X] Afinidad
-    - [X] Pgenerator avanzado (crear varios, afinidad)
-    - [X] Colas de rt_struct, arbol, procesos nuevos y bloqueados por cada scheduler
-
-- [X] Parametrizacion -> Quantum, Probabilidad de autobloqueo, Frecuencia de reschedule, Lo de la afinidad
 - [ ] Analisis de estadisicas
 - [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
 - [X] Memoria...
