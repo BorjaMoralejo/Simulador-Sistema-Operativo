@@ -23,6 +23,10 @@ typedef struct cpu cpu_t;
 typedef struct core core_t;
 typedef struct thread thread_t;
 typedef struct param_init param_init_t;
+typedef struct mm_struct mm_t;
+typedef struct status status_t;
+
+
 typedef pcb_t **** matrix3_t;
 typedef thread_t *** matrix3_thread_t; 
 
@@ -77,7 +81,32 @@ typedef struct pcb
 	int priority;
 	long int q;
 	long int blocked;
+	mm_t mm;
+	status_t status;
+
+	// estructura mm
+	// estructura status
+
 } pcb_t;
+
+// Estructura utilizada para guardar el contexto de los procesadores
+typedef struct status
+{
+	int *rn; 	// Array de 16 elementos
+	int pc; 	// 
+	int ri;		// Registro de instrucción
+	int PTBR;	// 
+	
+
+}status_t;
+
+// Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
+typedef struct mm_struct
+{
+	char *code_p; 	// Dirección virtual
+	char *data_p; 	// Dirección virtual
+	char *pgb;		// Dirección física
+}mm_t;
 
 // Estructura de linked list de enteros
 typedef struct lkdList_int
@@ -145,6 +174,15 @@ typedef struct thread
 	int id;
 	core_t *core;
 	pcb_t **enProceso;
+
+
+	int *rn; 	// Array de 16 elementos
+	int pc; 	// 
+	int ri;		// Registro de instrucción
+	int PTBR;	// 
+
+
+
 } thread_t;
 
 #endif
