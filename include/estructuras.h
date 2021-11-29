@@ -15,7 +15,6 @@ typedef struct pcb pcb_t;
 
 typedef struct lkdList_int lkdList_int_t;
 typedef struct lkdList_node_int ll_node_int_t;
-typedef struct queue_pcb queue_pcb_t;
 typedef struct mempool_pcb mempool_pcb_t;
 
 typedef struct machine machine_t;
@@ -125,16 +124,7 @@ typedef struct lkdList_node_int
 	int q_int;
 } ll_node_int_t;
 
-// Cola utilizada por el scheduler
-typedef struct queue_pcb
-{ 
-	int nElem;
-	int maxElem;
-	int firstPos;
-	int lastPos;
-	pcb_t **malloc;
-	pthread_mutex_t q_mtx;
-} queue_pcb_t;
+
 
 typedef struct mempool_pcb
 {

@@ -20,8 +20,9 @@
 	- [ ] Pagina de 256 bytes
 	- [ ] Espacio reservado de memoria 0x000000 0x3FFFFF
 		- [ ] Politica de meter (mirar tema 3)
+		- [ ] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
 	- [ ] Cargar programas en memoria
-	- [ ] Descargar programas en memoria
+	- [ ] Descargar programas en memoria	
 - [ ] Memoria secundaria
 	- [ ] Cargar programas a simular en el simulador
 		- [ ] Pillar pcb

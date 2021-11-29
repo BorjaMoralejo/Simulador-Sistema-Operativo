@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include "physical.h"
+#include "queue.h"
+
 //- [ ] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
 //	- [ ] Pagina de 256 bytes
 //	- [ ] Espacio reservado de memoria 0x000000 0x3FFFFF
@@ -14,6 +18,8 @@
 unsigned char *memoria;
 typedef struct pagina pagina_t;
 pagina_t *pages;
+huecos_node_t * huecos;
+queue_hueco_t * q_huecos_reserva;
 
 
 // Crear "huecos" de memoria utilizando una lista
@@ -22,20 +28,63 @@ pagina_t *pages;
 
 
 void init_physical(){
-    // Reservar memoria
+    // TODO: meterlo en parametrizacion o en lo que sea
+    int segmentos_max = 32;
+
+
+    // Reservar memoria: 24 direccionamiento + 2 posicionamiento tamaño de palabra
+    memoria = malloc(1<<26);
     // Crear lista de huecos
+    inicializar_queue_hueco(q_huecos_reserva, segmentos_max);
+    // Crear primer elemento y reservar direcciones de kernel
+    huecos_node_t *primer = dequeueh(q_huecos_reserva);
+    primer->dir = 0x3FFFFF;
+    primer->size = 0xFFFFFF-0x3FFFFF;
+    primer->next = NULL;
+    huecos = primer;
+    
 }
 
-void check_space(){
+/*
+Comprueba, siguiendo la política worst fit, si hay un hueco con el espacio requerido. 
+En caso de encontrar el hueco devuelve la posición y en caso contrario devuelve -1.
+*/
+int check_space(unsigned int _req_space){
+    int ret = -1;
+    huecos_node_t * p = huecos;
+    huecos_node_t * max = huecos;
+
     // pues eso, comprueba el hueco
-}
-void load_program(){
-    // Reservar hueco y asignarlo a la estructura mm
-    // Meter en la tabla de paginas
+    // politica worst fit, encontrar hueco de tamaño máximo y comprobar si entra o no
+    while(found == 0 && p->next != NULL)
+    {
+        if(p->size > max->size)
+            max = p;
+        p = p->next;
+    }
+
+    if(max->size == _req_space)       // Justo el espacio necesario, sacar nodo
+    {
+        enqueueh(max)
+    }else if(max->size >_req_space)   // Decrementa tamaño y recalcula la dirección
+    { 
+        max->size -= _req_space;
+        max->dir += _req_space;
+    }
+    return ret;
 }
 
-void unload_program(){
-    // Sacar de la tabla de páginas
-    // Marcar zonas como libre
-    // Juntar o no las listas con las existentes?
+/*
+Recupera el espacio que habia reservado para esa dirección y si es posible lo combina con otros nodos.
+*/
+void release_space(int _dir, int _size){
+    // Comprobar que alguno sumando dir+size de esa posicion
+    // si ninguno da este valor, se coge un nodo y se asigna _dir y size
+}
+
+/*
+Reagrupa los trozos de memoria consecutivos en uno más grande 
+*/
+void regroup(){
+
 }
