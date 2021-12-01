@@ -13,8 +13,8 @@
 
 #define mask_decode_op      0xF0000000
 #define mask_decode_r1      0x0F000000
-#define mask_decode_r1      0x00F00000
-#define mask_decode_r1      0x000F0000
+#define mask_decode_r2      0x00F00000
+#define mask_decode_r3      0x000F0000
 #define mask_absolute_dir   0x00FFFFFF
 
 #define ld      0
@@ -38,16 +38,51 @@
 
 enum operation{ADD, ST, LD, EXIT };
 
+void do_command(){
+    thread_t *t;
+    int * ri_dir; // ?????
+    ri = fetch(t)
+    decode ( t, ri);
+
+
+}
 
 // definir como sacar los datos, mascaras
-void fetch(thread_t * _thread){
+int * fetch(thread_t * _thread){
     int * instruccion;
     // buscar la info en la posicion que sea
+    _thread->pc;
+
+    // coger la direccion virtual del pc?
+    (*_thread->enProceso)->mm.code_p;
+
+    // coger la instruccion y meterla en RI
+
     return instruccion;
 }
 
 void decode(thread_t * _thread, int * _ri){
     // decode, enviar a siguiente operacion que toque
+    (*_thread->enProceso)->mm;
+
+    int op = ri & mask_decode_op;
+    switch(){
+        case ld:
+            printf("LD\n");
+            break;
+        case st:
+            printf"ST\n");
+            break;
+        case add:
+            printf("ADD\n");
+            break;
+        case exit:
+            printf("EXIT\n");
+            break;
+        default:
+            printf("Instrucción no valida");
+            break;
+    }
 
 }
 

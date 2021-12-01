@@ -72,6 +72,8 @@ void init_machine(param_init_t *_params, matrix3_t *_matrix, machine_t *_machine
 				thread_l->core = core_l;
 				thread_l->enProceso = &((*_matrix)[i][j][k]);
 				thr_matrix[i][j][k] = thread_l;
+				thread_l->PTBR;
+				thread_l->rn = malloc(sizeof(int)*16);
 			}
 		}
 	}

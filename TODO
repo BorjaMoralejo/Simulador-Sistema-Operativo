@@ -5,8 +5,8 @@
 - [ ] Machine
 	- [ ] MMU
 	- [ ] TLB
-	- [ ] PTBR
-	- [ ] Registros RI PC y 16 registros generales
+	- [ ] PTBR	<- inicializarla en memoria y darle valor al registro pt br
+	- [/] Registros RI PC y 16 registros generales
 	- [ ] Juego de instrucciones
 		- [ ] ld, st, add, exit
 			- [ ] Implementacion de exit
@@ -15,12 +15,13 @@
 			- [ ] Busqueda de operandos (carga y guardado) st, add y ld
 			- [ ] Operar (exit saca del procesador)
 			- [ ] Escribir resultados ld y add en registros y st en memoria
+	- [ ] Cambio de contexto
 - [ ] Memoria fisica
-	- [ ] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
-	- [ ] Pagina de 256 bytes
-	- [ ] Espacio reservado de memoria 0x000000 0x3FFFFF
-		- [ ] Politica de meter (mirar tema 3)
-		- [ ] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
+	- [/] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
+	- [/] Pagina de 256 bytes
+	- [/] Espacio reservado de memoria 0x000000 0x3FFFFF
+		- [/] Politica de meter (mirar tema 3)
+		- [-] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
 	- [ ] Cargar programas en memoria
 	- [ ] Descargar programas en memoria	
 - [ ] Memoria secundaria
@@ -35,7 +36,7 @@
 		- [ ] data direccion virtual
 		- [ ] pgb  direccion fisica 
 	- [ ] status por cambio de contexto
-ORDEN: Memoria, Maquina con componentes, loader y secundario
+ORDEN: Memoria, Maquina con componentes, tablas, loader y secundario
 
 - [ ] Analisis de estadisicas
 - [ ] Esquema en drawio de dependencias de los elementos y sus estructuras

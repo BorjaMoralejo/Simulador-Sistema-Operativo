@@ -94,7 +94,7 @@ typedef struct status
 	int *rn; 	// Array de 16 elementos
 	int pc; 	// 
 	int ri;		// Registro de instrucción
-	int PTBR;	// 
+	//int PTBR;	// 
 	
 
 }status_t;
