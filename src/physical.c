@@ -43,7 +43,20 @@ void init_physical(){
     primer->next = NULL;
     primer->prev = NULL;
     huecos = primer;
-    
+
+    // Inicializando PTBR
+
+    // el numero de logicas es...
+    // direccionamiento logico es 24 bits, 2¹⁶ paginas y 8 para el offset
+    // el numero de fisicas es 2²⁴ / 2⁸ = 2¹⁶ ? revisarlo porque creo que no
+    // direccionamiento memoria = 24 bits - 8 bits de pagina = 16 bits para numero de marco y 8 para offset y otros dos para el byte
+
+    // Entrada de la tabla de paginas (lo que hay en la TLB)
+    // V:       valided
+    // !P:       presencia
+    // !R:       referenciada
+    // D:       dirty
+    // !Prot:    bits de proteccion
 }
 
 /*
@@ -113,4 +126,5 @@ void release_space(int _dir, int _size){
       p->size = _size;
     }
 }
+
 

@@ -23,6 +23,8 @@ typedef struct core core_t;
 typedef struct thread thread_t;
 typedef struct param_init param_init_t;
 typedef struct mm_struct mm_t;
+typedef struct mmu_struct mmu_t;
+
 typedef struct status status_t;
 
 
@@ -104,8 +106,13 @@ typedef struct mm_struct
 {
 	char *code_p; 	// Dirección virtual
 	char *data_p; 	// Dirección virtual
-	char *pgb;		// Dirección física
+	char *pgb;		// Dirección física inicial del programa
 }mm_t;
+
+typedef struct mmu_struct
+{
+	char *direcciones;
+}mmu_t;
 
 // Estructura de linked list de enteros
 typedef struct lkdList_int
@@ -170,7 +177,7 @@ typedef struct thread
 	int pc; 	// 
 	int ri;		// Registro de instrucción
 	int PTBR;	// 
-
+	mmu_t mmu;
 
 
 } thread_t;

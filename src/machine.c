@@ -38,6 +38,17 @@
 
 enum operation{ADD, ST, LD, EXIT };
 
+void init_thread(thread_t * _thread){
+    // inicializando vector de registros
+    thread_l->rn = malloc(sizeof(int)*16);
+    
+    // asignando PTBR
+    thread_l->PTBR;
+
+    // generando mmu
+    _thread->mmu;
+}
+
 void do_command(){
     thread_t *t;
     int * ri_dir; // ?????
@@ -110,4 +121,16 @@ void operate(thread_t * _thread, enum operation _op, int *_val1, int *_val2){
 
 void write_results(thread_t * _thread, int *_rv, int ** _rd){
     // guardar resultado en el registro
+}
+
+
+void get_physical(thread_t *_thread, int _base, int _desplazamiento){
+    // pillar mmu
+    // mirar tlb en mmu y ver si existe la traduccion instantanea
+    // hit or miss
+    // i guess they never miss
+    // hit
+    // pues ya se tiene la direccion fisica
+    // miss
+    // mirar en la ptbr a que direccion apunta
 }

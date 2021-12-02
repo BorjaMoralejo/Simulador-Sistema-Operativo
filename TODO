@@ -4,8 +4,13 @@
 		- [ ] Afinidad
 - [ ] Machine
 	- [ ] MMU
-	- [ ] TLB
+		- [ ] TLB
+		- [ ] Limitar accesos a ciertas direcciones?
 	- [ ] PTBR	<- inicializarla en memoria y darle valor al registro pt br
+		- [ ] Instanciarla reservando memoria (lo del kernel)
+		- [ ] Mecanismos para reservar y quitar direcciones
+			- [ ] Se asignan las direcciones logicas en orden en el que esten libres 
+				y la tabla fisica es la que se haya asignado en memoria
 	- [/] Registros RI PC y 16 registros generales
 	- [ ] Juego de instrucciones
 		- [ ] ld, st, add, exit
@@ -15,7 +20,7 @@
 			- [ ] Busqueda de operandos (carga y guardado) st, add y ld
 			- [ ] Operar (exit saca del procesador)
 			- [ ] Escribir resultados ld y add en registros y st en memoria
-	- [ ] Cambio de contexto
+	- [/] Cambio de contexto
 - [ ] Memoria fisica
 	- [/] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
 	- [/] Pagina de 256 bytes

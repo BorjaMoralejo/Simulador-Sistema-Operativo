@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "estructuras.h"
+#include "machine.h"
 
 //#include "defines.h"
 #include <stdio.h>
@@ -72,8 +73,7 @@ void init_machine(param_init_t *_params, matrix3_t *_matrix, machine_t *_machine
 				thread_l->core = core_l;
 				thread_l->enProceso = &((*_matrix)[i][j][k]);
 				thr_matrix[i][j][k] = thread_l;
-				thread_l->PTBR;
-				thread_l->rn = malloc(sizeof(int)*16);
+				init_thread(thread_l);
 			}
 		}
 	}
@@ -83,9 +83,13 @@ void init_machine(param_init_t *_params, matrix3_t *_matrix, machine_t *_machine
 
 // Inicializando pool principal de PCBs
 void inicializar_estructura(int _maxElem){
+	int i;
 	memPCBs.nElem = 0;
 	memPCBs.maxElem = _maxElem;
 	memPCBs.malloc = malloc(sizeof(pcb_t)*_maxElem);
+	for (i = 0; i < _maxElem; i++)
+		memPCBs.malloc[i].status.rn = malloc(sizeof(int)*16);
+
 	pthread_mutex_init(&mem_mtx, NULL);
 }
 

@@ -13,10 +13,10 @@ void return_pcb(sched_disp_data_t * _sched_d_d, pcb_t *_expired_pcb);
 pcb_t * scheduler_get_next();
 
 void dispatcher(sched_disp_data_t * sched_d_d){
-    int thread;
+    int thread, i;
     pcb_t **p_hilo, *next;
     core_t * assigned_core = sched_d_d->assigned_core;
-    
+    thread_t * hilo;
     int context_change = 0;
     // Comprobar los procesos que estan en los hilos de la maquina
     // los procesos que hayan acabado sacarlos
@@ -24,8 +24,8 @@ void dispatcher(sched_disp_data_t * sched_d_d){
     {
         // Pillando y reseteando variables cada bucle
         context_change = 0;
-
-        p_hilo = assigned_core->threads[thread].enProceso;
+        hilo = &assigned_core->threads[thread];
+        p_hilo = hilo.enProceso;
         //printf("Trabajando con Hilo %d \n", thread);
         // Hay un proceso en este hilo, comprobar si ha terminado o si se ha quedado sin quantum
         if ( (*p_hilo) != NULL ) 
@@ -107,10 +107,20 @@ void dispatcher(sched_disp_data_t * sched_d_d){
             {
                 printf("Siguiente PID=%d, prioridad=%d\n", next->pid, next->priority);
                 // Guardando estado de la cpu
+                (*p_hilo)->status.pc = hilo->pc;
+                (*p_hilo)->status.ri = hilo->ri;
+                for (i = 0; i < 16; i++)
+                    (*p_hilo)->status.rn[i] = hilo->rn[i];
+
+                assigned_core->threads[thread].pc
                 printf("\tAsignando proceso en %2d %2d %2d \n", sched_d_d->cpu_id, sched_d_d->core_id, thread);
             }
             *p_hilo = next;           
             // Poner contexto de este proceso nuevo            
+            hilo->pc = (*p_hilo)->status.pc;
+            hilo->ri = (*p_hilo)->status.ri;
+            for (i = 0; i < 16; i++)
+                hilo->rn[i] = (*p_hilo)->status.rn[i];
 
 
         }
