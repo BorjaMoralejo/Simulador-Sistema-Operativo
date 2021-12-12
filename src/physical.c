@@ -16,6 +16,7 @@
 #define RESERVED_END   0x3FFFFF
 
 unsigned char *memoria;
+unsigned char *ptbr_p;
 typedef struct pagina pagina_t;
 pagina_t *pages;
 huecos_node_t * huecos, *last;
@@ -28,12 +29,13 @@ queue_hueco_t * q_huecos_reserva;
 
 
 void init_physical(){
+    
     // TODO: meterlo en parametrizacion o en lo que sea
     int segmentos_max = 32;
+    
 
-
-    // Reservar memoria: 24 direccionamiento + 2 posicionamiento tamaño de palabra
-    memoria = malloc(1<<26);
+    // Reservar memoria: 24 direccionamiento + tamaño de palabra
+    memoria = malloc(1<<24);
     // Crear lista de huecos
     inicializar_queue_hueco(q_huecos_reserva, segmentos_max);
     // Crear primer elemento y reservar direcciones de kernel
@@ -46,10 +48,24 @@ void init_physical(){
 
     // Inicializando PTBR
 
-    // el numero de logicas es...
-    // direccionamiento logico es 24 bits, 2¹⁶ paginas y 8 para el offset
-    // el numero de fisicas es 2²⁴ / 2⁸ = 2¹⁶ ? revisarlo porque creo que no
-    // direccionamiento memoria = 24 bits - 8 bits de pagina = 16 bits para numero de marco y 8 para offset y otros dos para el byte
+    /*
+    Palabras de 4B
+    Pagina de 256B
+    Direccionamiento fisico y virtual 24 bits
+
+    Espacio logico: 24 bits, 16MB
+    Tamaño pagina offset: 8 bits
+    Numero de paginas: 16 bits, 2 ^16
+    Espacio fisico: 24 bits, 16MB los mismos
+    Tamaño: 16 bits y 8 offset
+    Numero de marcos: 16 bits
+    Numero PTE: 2 ^16
+    Tamaño PTE: 2B
+    Tamaño PageTable: 2 ^16 * 2B = 2 ^17B    
+    */
+
+    // 0x000000 0x3FFFFF Reservado para kernel, son 22bits
+    ptbr_p = &memoria[0]; 
 
     // Entrada de la tabla de paginas (lo que hay en la TLB)
     // V:       valided
@@ -61,9 +77,9 @@ void init_physical(){
 
 /*
 Comprueba, siguiendo la política worst fit, si hay un hueco con el espacio requerido. 
-En caso de encontrar el hueco devuelve la posición y en caso contrario devuelve -1.
+En caso de encontrar el hueco devuelve la posición en _dir y en caso contrario devuelve -1.
 */
-int check_space(unsigned int _req_space){
+int check_space(unsigned int _req_space, int *_dir){
     int ret = -1;
     int redondeo_arriba;
 
@@ -86,12 +102,14 @@ int check_space(unsigned int _req_space){
     if(max->size == redondeo_arriba*PAGE_SIZE)       // Justo el espacio necesario, sacar nodo
     {
         enqueueh(q_huecos_reserva, max);
-        ret = max->dir;
+        (*_dir) = max->dir;
+        ret = 0;
     }else if(max->size >redondeo_arriba*PAGE_SIZE)   // Decrementa tamaño y recalcula la dirección
     { 
         max->size -= redondeo_arriba*PAGE_SIZE;
         max->dir += redondeo_arriba*PAGE_SIZE;
-        ret = max->dir;
+        (*_dir) = max->dir;
+        ret = 0;
     }
     return ret;
 }
@@ -102,14 +120,20 @@ Recupera el espacio que habia reservado para esa dirección y si es posible lo c
 void release_space(int _dir, int _size){
     huecos_node_t * p = huecos;
     int found = 0;
+    int i;
+    int tam;
+    tam = _size / PAGE_SIZE;
+    if (_size % PAGE_SIZE != 0)
+        tam++;
+
 
     // Comprobar que alguno sumando dir+size de esa posicion para apendizarlo
     while (found == 0 && p->next != NULL)
     {
-        if (p->dir+p->size == _dir)
+        if (p->dir + p->size == _dir)
         {
             found = 1;
-            p->size += _size;
+            p->size += tam*PAGE_SIZE;
         }
         p = p->next;
     }
@@ -123,8 +147,16 @@ void release_space(int _dir, int _size){
       p->prev = last;
       last = p;
       p->dir = _dir;
-      p->size = _size;
+      p->size = tam*PAGE_SIZE;
     }
+
+    // Quita la entrada de la tabla de paginas
+    for(i = 0; i < 1 << 16; i++)
+    {
+        if(ptbr_p[i] == _dir)
+            ptbr_p[i] = 0xFFFFFF;
+    }
+    
 }
 
 

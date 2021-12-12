@@ -17,6 +17,7 @@ typedef struct lkdList_int lkdList_int_t;
 typedef struct lkdList_node_int ll_node_int_t;
 typedef struct mempool_pcb mempool_pcb_t;
 
+typedef struct entrada_tlb entrada_tlb_t;
 typedef struct machine machine_t;
 typedef struct cpu cpu_t;
 typedef struct core core_t;
@@ -101,17 +102,25 @@ typedef struct status
 
 }status_t;
 
+typedef struct entrada_tbl
+{
+	unsigned int pagina;
+	unsigned int marco;
+}entrada_tlb_t;
+
 // Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
 typedef struct mm_struct
 {
-	char *code_p; 	// Dirección virtual
-	char *data_p; 	// Dirección virtual
-	char *pgb;		// Dirección física inicial del programa
+	unsigned int code_p; 	// Dirección virtual
+	unsigned int data_p; 	// Dirección virtual
+	unsigned int *pgb;		// Dirección física inicial del programa
 }mm_t;
 
 typedef struct mmu_struct
 {
-	char *direcciones;
+	entrada_tlb_t *entradas;
+	int n_entradas;
+	int max_entradas;
 }mmu_t;
 
 // Estructura de linked list de enteros
@@ -177,7 +186,7 @@ typedef struct thread
 	int pc; 	// 
 	int ri;		// Registro de instrucción
 	int PTBR;	// 
-	mmu_t mmu;
+	mmu_t *mmu;
 
 
 } thread_t;

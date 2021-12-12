@@ -4,12 +4,12 @@
 		- [ ] Afinidad
 - [ ] Machine
 	- [ ] MMU
-		- [ ] TLB
+		- [/] TLB
 		- [ ] Limitar accesos a ciertas direcciones?
-	- [ ] PTBR	<- inicializarla en memoria y darle valor al registro pt br
-		- [ ] Instanciarla reservando memoria (lo del kernel)
-		- [ ] Mecanismos para reservar y quitar direcciones
-			- [ ] Se asignan las direcciones logicas en orden en el que esten libres 
+	- [/] PTBR	<- inicializarla en memoria y darle valor al registro pt br
+		- [/] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
+		- [?] Mecanismos para reservar y quitar direcciones
+			- [?] Se asignan las direcciones logicas en orden en el que esten libres 
 				y la tabla fisica es la que se haya asignado en memoria
 	- [/] Registros RI PC y 16 registros generales
 	- [ ] Juego de instrucciones
@@ -27,24 +27,42 @@
 	- [/] Espacio reservado de memoria 0x000000 0x3FFFFF
 		- [/] Politica de meter (mirar tema 3)
 		- [-] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
-	- [ ] Cargar programas en memoria
+	- [/] Cargar programas en memoria
 	- [ ] Descargar programas en memoria	
 - [ ] Memoria secundaria
 	- [ ] Cargar programas a simular en el simulador
-		- [ ] Pillar pcb
+		- [/] Pillar pcb
 		- [ ] Tabla de paginas que se guarda en pgb
-		- [ ] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
-	
+		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
 - [ ] PCB
 	- [ ]  estructura mm
 		- [ ] code direccion virtual
 		- [ ] data direccion virtual
 		- [ ] pgb  direccion fisica 
 	- [ ] status por cambio de contexto
+- [ ] Funcionalidad del simulador
+	- [ ] Bloqueos
+	- [ ] Terminar programa con exit
+	- [ ] Sacar programas de memoria al Terminar
+	- [ ] Comprobar los cambios de contexto
 ORDEN: Memoria, Maquina con componentes, tablas, loader y secundario
 
-- [ ] Analisis de estadisicas
-- [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
-- [X] Memoria...
+
+
+// Preguntar:
+	-Memoria virtual y fisica, como se enlazan, si todos quieren la memoria virtual 0
+	como enlazo direccion virtual a pagina, como se llama lo que hace eso
+
+	-PGB de pcb, ¿qué es?
+
+	-¿Como sabes cuantas paginas ocupa un programa a la hora de quitarlo de memoria?
+
+
+
+
+
+//- [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
+- [ ] Memoria...
 Mejoras posibles:
 Productor Consumidor en las colas de scheduler maestro a esclavos y de pgenerator a scheduler principal
+//- [ ] Analisis de estadisicas
