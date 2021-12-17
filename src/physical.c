@@ -16,7 +16,7 @@
 #define RESERVED_END   0x3FFFFF
 
 unsigned char *memoria;
-unsigned char *ptbr_p;
+unsigned char *inicio_tablas;
 typedef struct pagina pagina_t;
 pagina_t *pages;
 huecos_node_t * huecos, *last;
@@ -65,7 +65,7 @@ void init_physical(){
     */
 
     // 0x000000 0x3FFFFF Reservado para kernel, son 22bits
-    ptbr_p = &memoria[0]; 
+    inicio_tablas = &memoria[0]; 
 
     // Entrada de la tabla de paginas (lo que hay en la TLB)
     // V:       valided
@@ -153,8 +153,8 @@ void release_space(int _dir, int _size){
     // Quita la entrada de la tabla de paginas
     for(i = 0; i < 1 << 16; i++)
     {
-        if(ptbr_p[i] == _dir)
-            ptbr_p[i] = 0xFFFFFF;
+        if(inicio_tablas[i] == _dir)
+            inicio_tablas[i] = 0xFFFFFF;
     }
     
 }

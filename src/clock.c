@@ -17,6 +17,7 @@ void init_clock(){
 }
 void* start_clock(void * _args){
     int cpu, core, thread;
+    int action;
     pcb_t * hilo;
     char state;
     while(1) // pulso
@@ -31,13 +32,25 @@ void* start_clock(void * _args){
                 for(thread = 0; thread < paramStruct.n_thread; thread++)
                     if((hilo = matrix3[cpu][core][thread]) != NULL)
                     {
-                        if (getRandom(0, paramStruct.block_chance) == 7) // !lucky
-                        {
-                            // SE BLOQUEA
-                            hilo->blocked = paramStruct.max_blocked_time;
-                            hilo->state = PCB_STATE_BLOCKED;
-                        }
-                        hilo->ttl--;
+			// Hacer operacion y comprobar si se
+			// 	1. continua normal
+			// 	2. termina la ejecucion
+			// 	3. se bloquea por "fallo en la cache" aleatorio
+			//
+			if(hilo->state == PCB_STATE_RUNNING)
+			{
+				action = do_command(machine.cpus[cpu].cores[core].hilos[thread]);
+				if(action == -1)
+					hilo->state = PCB_STATE_DEAD;
+	
+                       	 	if (action == 1 && getRandom(0, paramStruct.block_chance) == 0) // !lucky
+                       	 	{
+                        	    // SE BLOQUEA
+                        	    hilo->blocked = paramStruct.max_blocked_time;
+                        	    hilo->state = PCB_STATE_BLOCKED;
+                        	}
+			}
+                        // hilo->ttl--;
                         switch (hilo->state)    // BIRD
                         {
                         case PCB_STATE_BLOCKED: state='B';  break;

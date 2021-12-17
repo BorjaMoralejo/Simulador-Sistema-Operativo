@@ -8,18 +8,18 @@
 		- [ ] Limitar accesos a ciertas direcciones?
 	- [/] PTBR	<- inicializarla en memoria y darle valor al registro pt br
 		- [/] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
-		- [?] Mecanismos para reservar y quitar direcciones
-			- [?] Se asignan las direcciones logicas en orden en el que esten libres 
+		- [ ] Mecanismos para reservar y quitar direcciones
+			- [ ] Se asignan las direcciones logicas en orden en el que esten libres 
 				y la tabla fisica es la que se haya asignado en memoria
 	- [/] Registros RI PC y 16 registros generales
-	- [ ] Juego de instrucciones
-		- [ ] ld, st, add, exit
-			- [ ] Implementacion de exit
-			- [ ] Fetch 
-			- [ ] Decodificar ld, st, add, exit
-			- [ ] Busqueda de operandos (carga y guardado) st, add y ld
-			- [ ] Operar (exit saca del procesador)
-			- [ ] Escribir resultados ld y add en registros y st en memoria
+	- [/] Juego de instrucciones
+		- [/] ld, st, add, exit
+			- [/] Implementacion de exit
+			- [/] Fetch 
+			- [/] Decodificar ld, st, add, exit
+			- [/] Busqueda de operandos (carga y guardado) st, add y ld
+			- [/] Operar (exit saca del procesador)
+			- [/] Escribir resultados ld y add en registros y st en memoria
 	- [/] Cambio de contexto
 - [ ] Memoria fisica
 	- [/] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
@@ -28,20 +28,24 @@
 		- [/] Politica de meter (mirar tema 3)
 		- [-] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
 	- [/] Cargar programas en memoria
-	- [ ] Descargar programas en memoria	
+		- [ ] Generar las tablas de las paginas y que estas se almacenen en memoria
+			- [ ] Almacenarlas usando una cola circular o algo, nada complicado
+	- [ ] Descargar programas de memoria
 - [ ] Memoria secundaria
 	- [ ] Cargar programas a simular en el simulador
 		- [/] Pillar pcb
 		- [ ] Tabla de paginas que se guarda en pgb
 		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
 - [ ] PCB
-	- [ ]  estructura mm
+	- [ ] Estructura mm
 		- [ ] code direccion virtual
 		- [ ] data direccion virtual
 		- [ ] pgb  direccion fisica 
 	- [ ] status por cambio de contexto
+		- [ ] que limpie la tlb al hacer cambio de contexto
 - [ ] Funcionalidad del simulador
-	- [ ] Bloqueos
+	- [ ] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
+		- [ ] Si me sobra tiempo, simular una cache, que tampoco es para tanto
 	- [ ] Terminar programa con exit
 	- [ ] Sacar programas de memoria al Terminar
 	- [ ] Comprobar los cambios de contexto
@@ -51,12 +55,12 @@ ORDEN: Memoria, Maquina con componentes, tablas, loader y secundario
 
 // Preguntar:
 	-Memoria virtual y fisica, como se enlazan, si todos quieren la memoria virtual 0
-	como enlazo direccion virtual a pagina, como se llama lo que hace eso
-
+	como enlazo direccion virtual a pagina, como se llama lo que hace eso, esto crea un problema y hay que eliminarlo	
+		las variables ya estan en los datos
 	-PGB de pcb, ¿qué es?
-
+		es el puntero de la tabla de paginas del propio programa, cada programa tiene su tabla
 	-¿Como sabes cuantas paginas ocupa un programa a la hora de quitarlo de memoria?
-
+		esta en la tabla de paginas del propio pcb
 
 
 

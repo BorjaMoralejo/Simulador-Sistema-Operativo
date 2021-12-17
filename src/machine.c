@@ -88,7 +88,7 @@ int * get_physical(thread_t *_thread, int _virtual){
         i++;
     }
     
-    // miss, deberia de bloquearse el programa (eso esta implementado, solo que esta random, esta en el clock)
+    // miss, deberia de bloquearse el programa (no tiene cache) (eso esta implementado, solo que esta random, esta en el clock)
     // De todos modos, busca la respuesta aqui para que al desbloquearse lo unico que tenga que hacer sera repetir esto
     if(found == 0)
     {
@@ -118,96 +118,129 @@ int * get_physical(thread_t *_thread, int _virtual){
 Hace el comando que le toca al thread.
 Es posible que el comando sea EXIT y deba salir de la CPU.
 */ 
-void do_command(thread_t * _thread){
+int do_command(thread_t * _thread){
     
     int * ri_dir; // ?????
-
+    int ra, rb, rd, rs;
+    enum operation op;
     // Hacer esto con funciones "virtuales" para tener un puntero que va a ir cambiado y de esta
     // forma poder ir avanzando de operacion por turno
     // Mejor no por las posibles dependencias que se pueden crear
 
     
-    ri = fetch(_thread)
-    decode  ( _thread, ri);
-    load_op ();
-    operate ();
-    write_results();
+    fetch(_thread);
+    decode(_thread, &op);
+
+    // Se tiene que obtener los indices de los registros
+    load_op(_thread, op, &ra, &rb, &rd);
+
+    if (operate (_thread, op, ra, rb, &rs) == -1)
+    {
+	return -1;    // Exit
+    }
+
+    write_results(_thread, rs, rd);
+    return 0;
 }
 
 /*
 Coge la instruccion de memoria y la pone en RI
 */
-int * fetch(thread_t * _thread){
+void fetch(thread_t * _thread){
     int * instruccion;
+    int virtual_dir;
+    int physical_dir;
     // buscar la info en la posicion que sea
-    _thread->pc;
+    int pos = _thread->pc++;
 
     // coger la direccion virtual del pc?
-    (*_thread->enProceso)->mm.code_p;
+    (*_thread->enProceso)->mm.code_p[pos];
 
     // coger la instruccion y meterla en RI
-
-    return instruccion;
+	physical_dir = get_physical(_thread, virtual_dir);
+    _thread->ri = 0; // Acceder a physical_dir
 }
 
 /*
 Decodifica el registro RI para saber que operación debe hacer
 */
-void decode(thread_t * _thread, int * _ri){
+void decode(thread_t * _thread, enum operation *_op){
     // decode, enviar a siguiente operacion que toque
     (*_thread->enProceso)->mm;
     enum operation op_enum;
-    int op = ri & mask_decode_op;
-    switch(){
+    int op = _thread->ri & mask_decode_op;
+    // Asignando la operacion
+    switch(op){
         case ld:
             printf("LD\n");
-            op_enum = LD;
+            (*_op) = LD;
             break;
         case st:
             printf"ST\n");
-            op_enum = ST;
+            (*_op) = ST;
             break;
         case add:
             printf("ADD\n");
-            op_enum = ADD;
+            (*_op) = ADD;
             break;
         case exit:
             printf("EXIT\n");
-            op_enum = EXIT;
+            (*_op) = EXIT;
             break;
         default:
             printf("Instrucción no valida\n");
             break;
     }
-    // Siguiente es load_op
 }
 
 /*
 Según la operación debe cargar los datos de RI de una forma u otra. 
 Para ello existen las mascaras mask_decode_(r1, r2, r3, dir)
 */
-void load_op(thread_t * _thread, enum operation _op, int instruccion, int ** _ra, int ** _rb){
+void load_op(thread_t * _thread, enum operation _op, int * _ra, int * _rb, int * _rd){
     // cargar operandos accediendo a los registros
-    
+    switch(_op){
+case ADD:  // Debe cargar rd, r1 y r2
+	// Pasar de indice a valor
+	*(_ra) = _thread->ri & mask_decode_r2;
+	*(_rb) = _thread->ri & mask_decode_r3;
+	*(_rd) = _thread->ri & mask_decode_r1;
+mask_decode_dir   0x00FFFFFF
+	break;
+case ST:   // Debe cargar el indice de ra             revisarlo con el enunciado
+	*(_ra) = _thread->ri & mask_decode_r2;
+	break;
+case LD:   // Debe cargar el indice de rd
+	*(_rd) = _thread->ri & mask_decode_r1;
+	break;
+case EXIT: // No hace nada, no tiene registros destino ni origen
+	
+	break;
+default:
+	printf("Esto no debería mostrarse en pantalla\n");
+	break;
+    }
 }
 
 /*
 Debe hacer la operación que se ha descodificado. Esas operaciones pueden ser: ADD, ST, LD o EXIT
 */
-void operate(thread_t * _thread, enum operation _op, int *_val1, int *_val2){
-    int v;
+void operate(enum operation _op, int _val1, int _val2, int *_res){
+   
     switch (_op)
     {
     case ADD:
-        v = (*_val1) + (*_val2);
+        (*_res) = (*_val1) + (*_val2);
         break;
     case ST:
         // Cambiar el valor en memoria
-        v = (*_val1);
+	// Acceder a la direccion fisica de memoria y cambiar el valor
+	// TODO
+        (*_res) = (*_val1);
         break;
     case LD:
         // Coger el valor desde la memoria
-        v = (*_val2);
+        (*_res) = (*_val2);
         break;
     case EXIT:
         // Se debe parar la ejecucion, el programa ha terminado
@@ -221,8 +254,15 @@ void operate(thread_t * _thread, enum operation _op, int *_val1, int *_val2){
 /*
 Guarda los resultados de las operaciones en sus registros correspondientes
 */
-void write_results(thread_t * _thread, int *_rv, int ** _rd){
+void write_results(thread_t *_thread, int *_res, int * _rd){
     // guardar resultado en el registro
     // por ejemplo, el resultado de la suma o el load
     // el store tiene que cambiar la memoria pero en OP
+    // acceder al registro del indice rd y meter _res
+    if ((*_rd) < 0 || (*_rd) > 15)
+    {
+	printf("Indice fuera de rango %d\n", (*_rd));
+	return;
+    }
+_thread->rn[(*_rd)] = (*_res);
 }
