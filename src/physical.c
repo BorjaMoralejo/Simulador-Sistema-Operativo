@@ -9,8 +9,7 @@
 //	- [ ] Cargar programas en memoria
 //	- [ ] Descargar programas en memoria
 
-#define PAGE_SIZE 256
-#define WORD_SIZE 4
+
 
 #define RESERVED_START 0x000000
 #define RESERVED_END   0x3FFFFF

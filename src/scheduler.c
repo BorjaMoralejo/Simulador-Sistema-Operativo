@@ -150,27 +150,12 @@ pcb_t * scheduler_get_next(sched_disp_data_t * _sched_d_d){
     {
         printf("Ha recorrido todas las colas y no hay más procesos listos\n");     
     }
-    // Arbol
-    /*else 
-    {
-        // luego esta el arbol, que esas mantienen el tiempo constante?
-        // o que se haga porcentage de cpu
-        ret = removeNode(tree->smallest_nice, tree);
-        porcentaje = (float)prio_to_weight[ret->nice]/(float)total_weight;
-        ret->q = (int) roundf(porcentaje*time_slice);
-    }
-    */
+ 
 
     return ret;
 
 }
-
-/*cpu = contador/(paramStruct.n_core*paramStruct.n_thread);
-core = (contador%(paramStruct.n_core*paramStruct.n_thread))/(paramStruct.n_thread);
-thread = contador%paramStruct.n_thread;*/
-            
-
-
+       
 // Subrutina que se encarga de simular el desbloqueo de los procesos autobloqueados
 void blocked_pcbs(sched_disp_data_t * _sched_d_d){
     list_pcb_t * list;
@@ -376,12 +361,6 @@ void *start_schedule_slave(void *_args)
         }
         sched_d_d->count_reschedule++;
 
-
-        // Si esta dentro del arbol, recuperar el weight 
-        // Arbol
-        /*
-        total_weight += prio_to_weight[_blocked_pcb->nice];
-        */
 
         sched_done++;
         pthread_cond_signal(&multi_sched_cond);

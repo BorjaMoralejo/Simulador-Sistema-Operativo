@@ -1,15 +1,21 @@
 - [ ] Loader
-	- [ ] Reemplazar Pgenerator
-		- [ ] Prioridades
-		- [ ] Afinidad
+	- [/] Cargar programas a simular en el simulador
+		- [/] Pillar pcb
+		- [/] Tabla de paginas que se guarda en pgb
+		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
+	- [ ] Reemplazar Pgenerator, el tick de pgenerator ahora debe hacer tickear al loader y cambiar parametros. Ahora esos parametros afectan al loader y no PGenerator.
+		- [/] Prioridades
+		- [/] Afinidad
+
 - [ ] Machine
 	- [ ] MMU
 		- [/] TLB
-		- [ ] Limitar accesos a ciertas direcciones?
+		- [ ] Limitar accesos a ciertas direcciones, mirando si la página que se quiere acceder esta fuera de rango con code_start y end
 	- [/] PTBR	<- inicializarla en memoria y darle valor al registro pt br
-		- [/] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
-		- [ ] Mecanismos para reservar y quitar direcciones
-			- [ ] Se asignan las direcciones logicas en orden en el que esten libres 
+		- [/] Hacerlo con un malloc
+		- [-] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
+		- [/] Mecanismos para reservar y quitar direcciones
+			- [-] Se asignan las direcciones logicas en orden en el que esten libres 
 				y la tabla fisica es la que se haya asignado en memoria
 	- [/] Registros RI PC y 16 registros generales
 	- [/] Juego de instrucciones
@@ -21,35 +27,35 @@
 			- [/] Operar (exit saca del procesador)
 			- [/] Escribir resultados ld y add en registros y st en memoria
 	- [/] Cambio de contexto
-- [ ] Memoria fisica
+
+- [/] Memoria fisica
 	- [/] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
 	- [/] Pagina de 256 bytes
 	- [/] Espacio reservado de memoria 0x000000 0x3FFFFF
 		- [/] Politica de meter (mirar tema 3)
 		- [-] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
 	- [/] Cargar programas en memoria
-		- [ ] Generar las tablas de las paginas y que estas se almacenen en memoria
-			- [ ] Almacenarlas usando una cola circular o algo, nada complicado
-	- [ ] Descargar programas de memoria
-- [ ] Memoria secundaria
-	- [ ] Cargar programas a simular en el simulador
-		- [/] Pillar pcb
-		- [ ] Tabla de paginas que se guarda en pgb
-		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
+		- [-] Generar las tablas de las paginas y que estas se almacenen en memoria haciendo el malloc a mano
+	- [/] Descargar programas de memoria
+	
 - [ ] PCB
-	- [ ] Estructura mm
-		- [ ] code direccion virtual
-		- [ ] data direccion virtual
-		- [ ] pgb  direccion fisica 
-	- [ ] status por cambio de contexto
+	- [/] Estructura mm
+	- [/] status por cambio de contexto
 		- [ ] que limpie la tlb al hacer cambio de contexto
+	- [/] Al generarlo poner esos estados al valor por defecto
+
+
+
 - [ ] Funcionalidad del simulador
 	- [ ] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
 		- [ ] Si me sobra tiempo, simular una cache, que tampoco es para tanto
 	- [ ] Terminar programa con exit
 	- [ ] Sacar programas de memoria al Terminar
 	- [ ] Comprobar los cambios de contexto
-ORDEN: Memoria, Maquina con componentes, tablas, loader y secundario
+	- [ ] Al intentar cargar el programa tener en cuenta los errores
+	- [ ] Page fault
+	
+ORDEN: Memoria, Maquina con componentes, tablas, loader
 
 
 
@@ -63,10 +69,26 @@ ORDEN: Memoria, Maquina con componentes, tablas, loader y secundario
 		esta en la tabla de paginas del propio pcb
 
 
+- [/] Generar tablas para los programas cargados en memoria
+- [/] Asignar esa tabla al pgb, luego esa señal al procesador cuando carga
+	- [/] Hacerlo con malloc porque si no es mucho lio
+	- [ ] Eliminar las otras entradas del TLB al cambiar de contexto para evitar problemas con otros procesos
+- [ ] Mejorar TLB y MMU
+	- [ ] Politica de reemplazo LRU o NRU (añadir bit de referenciado, bit de modificado)
+	- [ ] Mejorar forma de eliminar (bit de validez) 
+	- [ ] Eliminar mejor la TLB
+- [/] Liberar memoria con free
 
 
-//- [ ] Esquema en drawio de dependencias de los elementos y sus estructuras
-- [ ] Memoria...
+
+- [ ] Memoria/Informe tecnico
+	- [ ] Physical: como se genera, politica, como se buscan los datos, estructuras de datos utilizadas
+	- [ ] Loader: requisitos para cargar programa(espacio en schedmaestro y que existan pcbs), luego posibles valores devueltos (falta de memoria y cosas asi) para indicar que no se ha completado la carga
+	- [ ] Sistema de paginado, como se ha implementado
+	- [ ] Explicar como se han generado las tablas
+	- [ ] Como se ha implementado la MMU, politica de reemplazo estructuras
+	- [ ] Estructura de mm_t
+	- [ ] Poner heracles y prometeo en el annexo
 Mejoras posibles:
 Productor Consumidor en las colas de scheduler maestro a esclavos y de pgenerator a scheduler principal
 //- [ ] Analisis de estadisicas

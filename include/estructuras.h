@@ -111,8 +111,10 @@ typedef struct entrada_tbl
 // Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
 typedef struct mm_struct
 {
+	//unsigned int start_dir;	// Inicio dirección virtual
 	unsigned int code_p; 	// Dirección virtual
 	unsigned int data_p; 	// Dirección virtual
+	unsigned int end_p;		// Dirección final de data
 	unsigned int *pgb;		// Dirección física inicial del programa
 }mm_t;
 
@@ -185,7 +187,7 @@ typedef struct thread
 	int *rn; 	// Array de 16 elementos
 	int pc; 	// 
 	int ri;		// Registro de instrucción
-	int PTBR;	// 
+	int *PTBR;	// Puntero a pagetable del pcb 
 	mmu_t *mmu;
 
 

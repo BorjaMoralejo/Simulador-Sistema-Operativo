@@ -6,7 +6,8 @@
 #include "list.h"
 #include "scheduler.h"
 #include "globals.h"
-
+#include "machine.h"
+#include "loader.h"
 
 // Forward declaring
 void return_pcb(sched_disp_data_t * _sched_d_d, pcb_t *_expired_pcb);
@@ -37,6 +38,7 @@ void dispatcher(sched_disp_data_t * sched_d_d){
                 context_change = 1;
                 printf("\tSacando proceso con PID=%d por finalización!\n", (*p_hilo)->pid);
                 // Lo manda de vuelta a la memoria principal, el proceso ha terminado
+
                 (*p_hilo)->state = PCB_STATE_DEAD;
                 putPCB(*p_hilo);
             }
@@ -111,17 +113,19 @@ void dispatcher(sched_disp_data_t * sched_d_d){
                 (*p_hilo)->status.ri = hilo->ri;
                 for (i = 0; i < 16; i++)
                     (*p_hilo)->status.rn[i] = hilo->rn[i];
-
-                assigned_core->threads[thread].pc
+                //assigned_core->threads[thread].pc
                 printf("\tAsignando proceso en %2d %2d %2d \n", sched_d_d->cpu_id, sched_d_d->core_id, thread);
             }
             *p_hilo = next;           
+
+
             // Poner contexto de este proceso nuevo            
             hilo->pc = (*p_hilo)->status.pc;
             hilo->ri = (*p_hilo)->status.ri;
             for (i = 0; i < 16; i++)
                 hilo->rn[i] = (*p_hilo)->status.rn[i];
-
+            hilo->PTBR = (*p_hilo)->mm.pgb;
+            clean_tlb(hilo);
 
         }
     }

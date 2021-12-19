@@ -35,8 +35,6 @@
 #define exit    15
 
 
-extern unsigned char *ptbr_p;   // de Physical.c
-
 enum operation{ADD, ST, LD, EXIT };
 
 void init_thread(thread_t * _thread){
@@ -46,7 +44,7 @@ void init_thread(thread_t * _thread){
     thread_l->rn = malloc(sizeof(int)*16);
     
     // asignando PTBR
-    thread_l->PTBR = ptbr_p;
+    thread_l->PTBR = NULL;
 
     // generando mmu
     _thread->mmu = malloc(sizeof(mmu_t));
@@ -69,6 +67,8 @@ int * get_physical(thread_t *_thread, int _virtual){
     // https://egela.ehu.eus/pluginfile.php/4977224/mod_resource/content/10/OS%20-%20Tema%203-1%20Sistema%20de%20gesti%C3%B3n%20de%20memoria.pdf
     // Pillar numero de pagina y offset
 
+// esto esta mal, hay que rehacerlo, la PTBR no deberia de ser como esta hecha lmao
+
     // REHACER lo de tlb, hay que buscar usando el numero de pagina y traducirlo a numero de marco
     unsigned int pagina = _virtual & 0xFFFF00;
     unsigned int offset = _virtual & 0x0000FF;
@@ -88,31 +88,39 @@ int * get_physical(thread_t *_thread, int _virtual){
         i++;
     }
     
+
+    
+
     // miss, deberia de bloquearse el programa (no tiene cache) (eso esta implementado, solo que esta random, esta en el clock)
     // De todos modos, busca la respuesta aqui para que al desbloquearse lo unico que tenga que hacer sera repetir esto
     if(found == 0)
     {
-        i = 0;
-        // mirar en la ptbr a que direccion apunta
-        // Hacer while en PTBR hasta encontrar la direccion
-        while ( i < 65535)
-        {
-            // dir_traducida la trae de la tabla de paginas, desplazamiento debido a tamaño de palabra
-            if ( i == pagina )
-            {
-                dir_traducida = _thread->PTBR[i];
-            }        
-        }
+        // Si esta llena se va a ir sobreescribiendo 
+        if(_thread->mmu->n_entradas >= _thread->mmu->max_entradas)
+            _thread->mmu->n_entradas = _thread->mmu->max_entradas-1;  
+
+        dir_traducida = _thread->PTBR[pagina];        
+
         // ponerla en la tlb? cuando se desbloquee
         // Al ser una simulación limitada, se asigna el valor de la tlb al desbloquearse 
         // para simular la nueva entrada de la TLB.
-        
+        _thread->mmu->entradas[_thread->mmu->n_entradas].pagina = pagina;
+        _thread->mmu->entradas[_thread->mmu->n_entradas].marco = ;
     }
 
     dir_traducida |= offset;
 
     return dir_traducida;
 }
+
+/*
+La TLB no tiene en cuenta de que proceso es la entrada en la TLB.
+Una forma para evitar problemas es limpiando la TLB al hacer cambio de contexto.
+*/
+void clean_TLB(thread_t * _thread){
+    _thread->mmu->n_entradas = 0;
+}
+
 
 /*
 Hace el comando que le toca al thread.

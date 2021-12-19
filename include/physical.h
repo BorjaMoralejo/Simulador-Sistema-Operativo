@@ -1,6 +1,8 @@
 #ifndef _PHYSICAL_H
 #define _PHYSICAL_H 1
 
+#define PAGE_SIZE 256
+#define WORD_SIZE 4
 typedef struct huecos_node huecos_node_t;
 
 typedef struct huecos_node
