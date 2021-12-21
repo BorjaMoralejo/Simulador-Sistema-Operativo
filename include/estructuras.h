@@ -4,7 +4,7 @@ Este fichero contiene las estructuras de datos usadas por el simulador de sistem
 #ifndef _ESTRUCTURAS_H
 #define _ESTRUCTURAS_H
 #include <pthread.h>
-
+#include "tlb.h"
 #define PCB_STATE_IDLE 		0
 #define PCB_STATE_RUNNING 	1
 #define PCB_STATE_BLOCKED 	2
@@ -102,11 +102,6 @@ typedef struct status
 
 }status_t;
 
-typedef struct entrada_tbl
-{
-	unsigned int pagina;
-	unsigned int marco;
-}entrada_tlb_t;
 
 // Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
 typedef struct mm_struct
@@ -118,12 +113,7 @@ typedef struct mm_struct
 	unsigned int *pgb;		// Dirección física inicial del programa
 }mm_t;
 
-typedef struct mmu_struct
-{
-	entrada_tlb_t *entradas;
-	int n_entradas;
-	int max_entradas;
-}mmu_t;
+
 
 // Estructura de linked list de enteros
 typedef struct lkdList_int

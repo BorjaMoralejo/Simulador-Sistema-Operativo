@@ -23,4 +23,14 @@ Recupera el espacio que habia reservado para esa dirección y si es posible lo c
 */
 void release_space(int _dir, int _size);
 
+/*
+Esta función devuelve el valor que contiene la memoria en la posición _marco.
+La memoria es un array de unsigned chars, son bytes sueltos, y la memoria está direccionada a bytes
+pero la palabra son 4 bytes.
+Entonces en esta función lo unico que se hace es aumentar el offset de la dirección y va contruyendo el entero
+*/
+int get_at_dir(unsigned int _marco);
+
+
+void set_at_dir(unsigned int _marco, int _valor);
 #endif

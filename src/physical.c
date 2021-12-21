@@ -158,4 +158,30 @@ void release_space(int _dir, int _size){
     
 }
 
+/*
+Esta función devuelve el valor que contiene la memoria en la posición _marco.
+La memoria es un array de unsigned chars, son bytes sueltos, y la memoria está direccionada a bytes
+pero la palabra son 4 bytes.
+Entonces en esta función lo unico que se hace es aumentar el offset de la dirección y va contruyendo el entero
+*/
+int get_at_dir(unsigned int _marco){
+    int ret = 0x00000000;
+    ret = ret | (memoria[_marco + 0] << 0);
+    ret = ret | (memoria[_marco + 1] << 8);
+    ret = ret | (memoria[_marco + 2] << 16);
+    ret = ret | (memoria[_marco + 3] << 24);
+    return ret;
+}
+
+/*
+Debido al direccionamiento al byte y el tamaño de la palabra son 4 bytes, esta función
+se encarga de descomponer el _valor que se va a almacenar en los 4 bytes que componen el int.
+Se utilizan mascaras para ello.
+*/
+void set_at_dir(unsigned int _marco, int _valor){
+    memoria[_marco + 0] = _valor & 0x000000FF;
+    memoria[_marco + 1] = _valor & 0x0000FF00;
+    memoria[_marco + 2] = _valor & 0x00FF0000;
+    memoria[_marco + 3] = _valor & 0xFF000000;
+}
 

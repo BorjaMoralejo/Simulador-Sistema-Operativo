@@ -1,5 +1,6 @@
 
 #include "estructuras.h"
+#include "tlb.h"
 // mmu
 // tlb
 // traduccion de instrucciones a acciones
@@ -34,6 +35,8 @@
 #define blt     14
 #define exit    15
 
+extern unsigned char *memoria;
+
 
 enum operation{ADD, ST, LD, EXIT };
 
@@ -58,7 +61,7 @@ void init_thread(thread_t * _thread){
     }
 }
 
-int * get_physical(thread_t *_thread, int _virtual){
+int get_physical(thread_t *_thread, int _virtual){
     int i;
     char found = 0;
     unsigned dir_traducida = NULL;
@@ -80,7 +83,7 @@ int * get_physical(thread_t *_thread, int _virtual){
     while (found == 0 && i < _thread->mmu.n_entradas)
     {
         // Si encuentra el numero de pagina en el tlb, se asigna el valor del TLB
-        if(_thread->mmu.entradas[i].pagina == pagina)
+        if((_thread->mmu->entradas[i].pagina & BIT_MASK_VALID) == BIT_MASK_VALID &&  (_thread->mmu.entradas[i].pagina & 0x00FFFFFF) == pagina)
         {
             dir_traducida = _thread->mmu.entradas[i].marco;
             found = 1;
@@ -95,17 +98,12 @@ int * get_physical(thread_t *_thread, int _virtual){
     // De todos modos, busca la respuesta aqui para que al desbloquearse lo unico que tenga que hacer sera repetir esto
     if(found == 0)
     {
-        // Si esta llena se va a ir sobreescribiendo 
-        if(_thread->mmu->n_entradas >= _thread->mmu->max_entradas)
-            _thread->mmu->n_entradas = _thread->mmu->max_entradas-1;  
+        // Al ser una simulación limitada, se asigna el valor de la tlb ahora 
 
         dir_traducida = _thread->PTBR[pagina];        
+        // Si esta llena se va a ir sobreescribiendo 
+        add_to_TLB(_thread, pagina, dir_traducida); 
 
-        // ponerla en la tlb? cuando se desbloquee
-        // Al ser una simulación limitada, se asigna el valor de la tlb al desbloquearse 
-        // para simular la nueva entrada de la TLB.
-        _thread->mmu->entradas[_thread->mmu->n_entradas].pagina = pagina;
-        _thread->mmu->entradas[_thread->mmu->n_entradas].marco = ;
     }
 
     dir_traducida |= offset;
@@ -113,13 +111,7 @@ int * get_physical(thread_t *_thread, int _virtual){
     return dir_traducida;
 }
 
-/*
-La TLB no tiene en cuenta de que proceso es la entrada en la TLB.
-Una forma para evitar problemas es limpiando la TLB al hacer cambio de contexto.
-*/
-void clean_TLB(thread_t * _thread){
-    _thread->mmu->n_entradas = 0;
-}
+
 
 
 /*
@@ -135,7 +127,7 @@ int do_command(thread_t * _thread){
     // forma poder ir avanzando de operacion por turno
     // Mejor no por las posibles dependencias que se pueden crear
 
-    
+    // B D L A E
     fetch(_thread);
     decode(_thread, &op);
 
@@ -144,7 +136,7 @@ int do_command(thread_t * _thread){
 
     if (operate (_thread, op, ra, rb, &rs) == -1)
     {
-	return -1;    // Exit
+	    return -1;    // Exit
     }
 
     write_results(_thread, rs, rd);
@@ -166,7 +158,7 @@ void fetch(thread_t * _thread){
 
     // coger la instruccion y meterla en RI
 	physical_dir = get_physical(_thread, virtual_dir);
-    _thread->ri = 0; // Acceder a physical_dir
+    _thread->ri = get_at_dir[physical_dir]; // Acceder a physical_dir
 }
 
 /*
@@ -210,16 +202,17 @@ void load_op(thread_t * _thread, enum operation _op, int * _ra, int * _rb, int *
     switch(_op){
 case ADD:  // Debe cargar rd, r1 y r2
 	// Pasar de indice a valor
-	*(_ra) = _thread->ri & mask_decode_r2;
-	*(_rb) = _thread->ri & mask_decode_r3;
-	*(_rd) = _thread->ri & mask_decode_r1;
-mask_decode_dir   0x00FFFFFF
+	(*_ra) = _thread->ri & mask_decode_r2;
+	(*_rb) = _thread->ri & mask_decode_r3;
+	(*_rd) = _thread->ri & mask_decode_r1;
 	break;
 case ST:   // Debe cargar el indice de ra             revisarlo con el enunciado
-	*(_ra) = _thread->ri & mask_decode_r2;
+	(*_ra) = _thread->ri & mask_decode_r2;
+    (* rb) = _thread->ri & mask_decode_dir;
 	break;
 case LD:   // Debe cargar el indice de rd
-	*(_rd) = _thread->ri & mask_decode_r1;
+	(*_rd) = _thread->ri & mask_decode_r1;
+    (* rb) = _thread->ri & mask_decode_dir;
 	break;
 case EXIT: // No hace nada, no tiene registros destino ni origen
 	
@@ -232,31 +225,38 @@ default:
 
 /*
 Debe hacer la operación que se ha descodificado. Esas operaciones pueden ser: ADD, ST, LD o EXIT
+El int que devuelve se utiliza para saber si es EXIT o un error
 */
-void operate(enum operation _op, int _val1, int _val2, int *_res){
-   
+int operate(enum operation _op, int _val1, int _val2, int *_res, thread_t _thread){
+    int ret = 0;
+    int physical_dir;
     switch (_op)
     {
     case ADD:
         (*_res) = (*_val1) + (*_val2);
         break;
     case ST:
-        // Cambiar el valor en memoria
+    // Cambiar el valor en memoria
 	// Acceder a la direccion fisica de memoria y cambiar el valor
-	// TODO
-        (*_res) = (*_val1);
+        physical_dir = get_physical(_thread, _val1);
+        printf("Accediendo a la posicion de memoria virtual %d, physical %d y colocando \n", physical_dir, _val1, _val2);
+        set_at_dir(physical_dir, _val2);
         break;
     case LD:
+        physical_dir = get_physical(_thread, _val1);
         // Coger el valor desde la memoria
-        (*_res) = (*_val2);
+        (*_res) = get_at_dir(physical_dir);
         break;
     case EXIT:
         // Se debe parar la ejecucion, el programa ha terminado
+        ret = -1;
         break;
     default:
         printf("No se como he acabado aquí\n");
+        ret = -1;
         break;
     }
+    return ret;
 }
 
 /*
@@ -272,5 +272,5 @@ void write_results(thread_t *_thread, int *_res, int * _rd){
 	printf("Indice fuera de rango %d\n", (*_rd));
 	return;
     }
-_thread->rn[(*_rd)] = (*_res);
+    _thread->rn[(*_rd)] = (*_res);
 }

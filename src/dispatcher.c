@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "machine.h"
 #include "loader.h"
+#include "tlb.h"
 
 // Forward declaring
 void return_pcb(sched_disp_data_t * _sched_d_d, pcb_t *_expired_pcb);
