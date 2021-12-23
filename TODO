@@ -1,85 +1,85 @@
-- [/] Loader
-	- [/] Cargar programas a simular en el simulador
-		- [/] Pillar pcb
-		- [/] Tabla de paginas que se guarda en pgb
-		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
-	- [/] Reemplazar Pgenerator, el tick de pgenerator ahora debe hacer tickear al loader y cambiar parametros. Ahora esos parametros afectan al loader y no PGenerator.
-		- [/] Prioridades
-		- [/] Afinidad
+- [X] Loader
+	- [X] Cargar programas a simular en el simulador
+		- [X] Pillar pcb
+		- [X] Tabla de paginas que se guarda en pgb
+		- [X] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
+	- [X] Reemplazar Pgenerator, el tick de pgenerator ahora debe hacer tickear al loader y cambiar parametros. Ahora esos parametros afectan al loader y no PGenerator.
+		- [X] Prioridades
+		- [X] Afinidad
 
-- [/] Machine
-	- [/] MMU
-		- [/] TLB
-		- [/] Limitar accesos a ciertas direcciones, mirando si la página que se quiere acceder esta fuera de rango con code_start y end
+- [X] Machine
+	- [X] MMU
+		- [X] TLB
+		- [X] Limitar accesos a ciertas direcciones, mirando si la página que se quiere acceder esta fuera de rango con code_start y end
 			- [-] Forzar terminación (estado TERM) (no porque no va a haber código que haga esto)
-	- [/] PTBR	<- inicializarla en memoria y darle valor al registro pt br
-		- [/] Hacerlo con un malloc
+	- [X] PTBR	<- inicializarla en memoria y darle valor al registro pt br
+		- [X] Hacerlo con un malloc
 		- [-] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
-		- [/] Mecanismos para reservar y quitar direcciones
+		- [X] Mecanismos para reservar y quitar direcciones
 			- [-] Se asignan las direcciones logicas en orden en el que esten libres 
 				y la tabla fisica es la que se haya asignado en memoria
-	- [/] Registros RI PC y 16 registros generales
-	- [/] Juego de instrucciones
-		- [/] ld, st, add, exit
-			- [/] Implementacion de exit
-			- [/] Fetch 
-			- [/] Decodificar ld, st, add, exit
-			- [/] Busqueda de operandos (carga y guardado) st, add y ld
-			- [/] Operar (exit saca del procesador)
-			- [/] Escribir resultados ld y add en registros y st en memoria
-	- [/] Cambio de contexto
+	- [X] Registros RI PC y 16 registros generales
+	- [X] Juego de instrucciones
+		- [X] ld, st, add, exit
+			- [X] Implementacion de exit
+			- [X] Fetch 
+			- [X] Decodificar ld, st, add, exit
+			- [X] Busqueda de operandos (carga y guardado) st, add y ld
+			- [X] Operar (exit saca del procesador)
+			- [X] Escribir resultados ld y add en registros y st en memoria
+	- [X] Cambio de contexto
 
-- [/] Memoria fisica
-	- [/] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
-	- [/] Pagina de 256 bytes
-	- [/] Espacio reservado de memoria 0x000000 0x3FFFFF
-		- [/] Politica de meter (mirar tema 3)
+- [X] Memoria fisica
+	- [X] Bus de direcciones 24 bits, tamaño palabra (4 bytes)
+	- [X] Pagina de 256 bytes
+	- [X] Espacio reservado de memoria 0x000000 0x3FFFFF
+		- [X] Politica de meter (mirar tema 3)
 		- [-] Al traducir direcciones o lo que sea que pase, que compruebe esta direccion y si esta en su rango que saque una excepcion
-	- [/] Cargar programas en memoria
+	- [X] Cargar programas en memoria
 		- [-] Generar las tablas de las paginas y que estas se almacenen en memoria haciendo el malloc a mano
-	- [/] Descargar programas de memoria
+	- [X] Descargar programas de memoria
 	
-- [/] PCB
-	- [/] Estructura mm
-	- [/] status por cambio de contexto
-		- [/] que limpie la tlb al hacer cambio de contexto
-	- [/] Al generarlo poner esos estados al valor por defecto
+- [X] PCB
+	- [X] Estructura mm
+	- [X] status por cambio de contexto
+		- [X] que limpie la tlb al hacer cambio de contexto
+	- [X] Al generarlo poner esos estados al valor por defecto
 
 
 
-- [/] Funcionalidad del simulador
-	- [/] Page fault
-	- [/] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
-	- [/] Terminar programa con exit
-	- [/] Sacar programas de memoria al Terminar
-	- [/] Comprobar los cambios de contexto
-	- [/] Al intentar cargar el programa tener en cuenta los errores
+- [X] Funcionalidad del simulador
+	- [X] Page fault
+	- [X] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
+	- [X] Terminar programa con exit
+	- [X] Sacar programas de memoria al Terminar
+	- [X] Comprobar los cambios de contexto
+	- [X] Al intentar cargar el programa tener en cuenta los errores
+
+
+- [X] Generar tablas para los programas cargados en memoria
+- [X] Asignar esa tabla al pgb, luego esa señal al procesador cuando carga
+	- [X] Hacerlo con malloc porque si no es mucho lio
+	- [X] Eliminar las otras entradas del TLB al cambiar de contexto para evitar problemas con otros procesos
+- [X] TLB y MMU
+	- [X] Politica de reemplazo FIFO
+	- [X] Mejorar forma de eliminar (bit de validez) 
+- [X] Liberar memoria con free
 	
 ORDEN: Memoria, Maquina con componentes, tablas, loader
-- [/] Observaciones finales
+- [X] Observaciones finales
 	- [-] Los segmentos de instrucciones y datos pueden estar en la misma página.
 
-- [/] Parametros
-	- [/] Nombre de programa
-	- [/] Inicio de programa
-	- [/] Fin de programa
+- [X] Parametros
+	- [X] Nombre de programa
+	- [X] Inicio de programa
+	- [X] Fin de programa
 
-- [/] Printear:
-	- [/] Eliminar trazas
-	- [/] Mostrar porcentaje de memoria usado
+- [X] Printear:
+	- [X] Eliminar trazas
+	- [X] Mostrar porcentaje de memoria usado
 
-- [/] Mejoras
-	- [/] Función para volcar resultados de programa en fichero tras finalizar
-
-
-- [/] Generar tablas para los programas cargados en memoria
-- [/] Asignar esa tabla al pgb, luego esa señal al procesador cuando carga
-	- [/] Hacerlo con malloc porque si no es mucho lio
-	- [/] Eliminar las otras entradas del TLB al cambiar de contexto para evitar problemas con otros procesos
-- [/] TLB y MMU
-	- [/] Politica de reemplazo FIFO
-	- [/] Mejorar forma de eliminar (bit de validez) 
-- [/] Liberar memoria con free
+- [X] Mejoras
+	- [X] Función para volcar resultados de programa en fichero tras finalizar
 
 
 
