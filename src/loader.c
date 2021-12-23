@@ -27,7 +27,7 @@ void * start_loader(void * _args){
     pid_t2 pid_count = 0;
     pcb_t * pcb;
     int i = 0, ret;    
-    int max_program = 10;
+    int max_program = 999;
     while (1)
     {
         pthread_mutex_lock(&loader_mtx);
@@ -188,7 +188,6 @@ int load_program(int _n, pid_t2 _pid){
         pcb->mm.pgb[(code_pages)+i] = dir_data + i*PAGE_SIZE;
     
 
-    // TODO: revisar si se esta metiendo bien el programa en memoria...
     // Copiar datos de codigo directamente a memoria
     for(i = 0; i < code_size >> 2; i++){
         fscanf(fd, "%08X", &binary);      

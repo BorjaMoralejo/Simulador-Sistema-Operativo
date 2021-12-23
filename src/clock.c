@@ -25,6 +25,8 @@ void* start_clock(void * _args){
     while(1) // pulso
     { 
         
+        // Sincronizar timers
+        pthread_mutex_lock(&timer_mtx);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n------------Pulso---------\n\n");
 
         printf("Idles: %d\t CPU \t CORE \t THREAD\t PID \t TTL \t  Q\t  PRIO\n", machine.idle_threads);
@@ -72,8 +74,6 @@ void* start_clock(void * _args){
                     }
 
         printf("\n\n-----Timers:\n");
-        // Sincronizar timers
-        pthread_mutex_lock(&timer_mtx);
 
         // Una vez los timers terminan, continuar
         while(nDone < nTimers){

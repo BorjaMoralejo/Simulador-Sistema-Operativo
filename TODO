@@ -56,17 +56,21 @@
 	- [/] Al intentar cargar el programa tener en cuenta los errores
 	
 ORDEN: Memoria, Maquina con componentes, tablas, loader
+- [ ] Observaciones finales
+	- [ ] Los segmentos de instrucciones y datos pueden estar en la misma página.
 
+- [ ] Parametros
+	- [ ] Nombre de programa
+	- [ ] Inicio de programa
+	- [ ] Fin de programa
 
+- [ ] Printear:
+	- [ ] Eliminar trazas
+	- [ ] Mostrar porcentaje de memoria usado
 
-// Preguntar:
-	-Memoria virtual y fisica, como se enlazan, si todos quieren la memoria virtual 0
-	como enlazo direccion virtual a pagina, como se llama lo que hace eso, esto crea un problema y hay que eliminarlo	
-		las variables ya estan en los datos
-	-PGB de pcb, ¿qué es?
-		es el puntero de la tabla de paginas del propio programa, cada programa tiene su tabla
-	-¿Como sabes cuantas paginas ocupa un programa a la hora de quitarlo de memoria?
-		esta en la tabla de paginas del propio pcb
+- [ ] Mejoras
+	- [ ] Implementar todas las operaciones
+	- [ ] Función para volcar resultados de programa en fichero tras finalizar (hacerlo como heracles)
 
 
 - [/] Generar tablas para los programas cargados en memoria
@@ -81,13 +85,32 @@ ORDEN: Memoria, Maquina con componentes, tablas, loader
 
 
 - [ ] Memoria/Informe tecnico
-	- [ ] Physical: como se genera, politica, como se buscan los datos, estructuras de datos utilizadas
-	- [ ] Loader: requisitos para cargar programa(espacio en schedmaestro y que existan pcbs), luego posibles valores devueltos (falta de memoria y cosas asi) para indicar que no se ha completado la carga
-	- [ ] Sistema de paginado, como se ha implementado
-	- [ ] Explicar como se han generado las tablas
-	- [ ] Como se ha implementado la MMU, politica de reemplazo estructuras
-	- [ ] Estructura de mm_t
+	- [ ] Explicar que hace la tercera parte
+	- [ ] Explicar que hacen cada apartado:
+		- [ ] FASE 1
+			- [ ] Explicar que se ha previsto en machine para ejecutar las operaciones
+				- [ ] Las fases de fetch decode... 
+				- [ ] Cambiar funcionamiento de TTL a que detecte EXIT (o term por PAGE FAULT, aunque no está probado)
+				- [ ] Por ciclo de reloj deberá ejecutar una instrucción y no es del todo real por cosas de la cache y que no son fases segmentadas, las hace todas seguidas
+			?- [ ] Loader: requisitos para cargar programa(espacio en schedmaestro y que existan pcbs), luego posibles valores devueltos (falta de memoria y cosas asi) para indicar que no se ha completado la carga
+			- [ ] Memoria fisica: que es, caracterisiticas que está en la clase...
+			- [ ] Como se ha implementado la transformacion de virtual a fisica
+			- [ ] Explicar como se han generado las tablas
+			- [ ] Como se ha implementado la MMU, politica de reemplazo estructuras
+		- [ ] FASE 2
+			- [ ] Physical: como se genera, politica, como se buscan los datos, estructuras de datos utilizadas
+			- [ ] Explicar que ejecuta el procesador simulado, operaciones, como lo hace, y que pasa tras finalizar
+			- [ ] Sistema de paginado, como se ha implementado
+			- [ ] LOADER: como lee y carga/descarga los datos de memoria
+		- [ ] Estructuras generadas	y modificadas
+			- [ ] Modificacion PCB
+				- [ ] Status
+				- [ ] Estructura de mm_t (nota de añadido end)
+			- [ ] Modificación machine
+				- [ ] MMU
+				- [ ] Entrada de página
+				- [ ] PC, RI, RN
+			- [ ] Huecos
+			- [ ] Queue huecos
 	- [ ] Poner heracles y prometeo en el annexo
-Mejoras posibles:
-Productor Consumidor en las colas de scheduler maestro a esclavos y de pgenerator a scheduler principal
-//- [ ] Analisis de estadisicas
+- [ ] Cambiar memoria, lo de piscina

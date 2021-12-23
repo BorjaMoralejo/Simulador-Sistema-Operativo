@@ -87,6 +87,7 @@ int get_physical(thread_t *_thread, int _virtual, unsigned int *_physical){
     if((*_thread->enProceso)->mm.code_p > _virtual || (*_thread->enProceso)->mm.end_p < _virtual)
     {
         // Page fault
+        printf("PAGE FAULT!!!!!\n");
         return -1;
     }
     printf("M_2: Virtual %u Offset: %d \n", _virtual, offset);
@@ -174,7 +175,8 @@ int do_command(thread_t * _thread){
 
     // ESCRITURA
     printf("write\n\n");
-    write_results(_thread, &rs, &rd);
+    if(op != ST)
+        write_results(_thread, &rs, &rd);
 
     if(next_action == 1 || ret_get_physical == 1)
         return 1;
@@ -199,7 +201,8 @@ int fetch(thread_t * _thread){
     printf("PC %08X\n", _thread->pc);
 	val = get_physical(_thread, virtual_dir, &physical_dir);
     printf("Physical %u\n", physical_dir);
-    _thread->ri = get_at_dir(physical_dir); // Acceder a physical_dir
+    if(val != -1)
+        _thread->ri = get_at_dir(physical_dir); // Acceder a physical_dir
     printf("ri = %X\n", _thread->ri);
     return val;
 }
@@ -254,7 +257,7 @@ case ADD:  // Debe cargar rd, r1 y r2
 case ST:   // Debe cargar el indice de ra             revisarlo con el enunciado
 	(*_ra) = (_thread->ri & mask_decode_dir);
     (*_rb) = (_thread->ri & mask_decode_r1) >> 24;
-    printf("Cargando operandos de ST: rd %d,ra %d\n", (*_rd), (*_ra));
+    printf("Cargando operandos de ST: rd %d,ra %d\n", (*_rb), (*_ra));
 	break;
 case LD:   // Debe cargar el indice de rd
 	(*_rd) = (_thread->ri & mask_decode_r1) >> 24;
@@ -287,13 +290,17 @@ int operate(thread_t * _thread, enum operation _op, int _val1, int _val2, int *_
     // Cambiar el valor en memoria
 	// Acceder a la direccion fisica de memoria y cambiar el valor
         (*val) = get_physical(_thread, _val1, &physical_dir);
-        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X y colocando %d\n", _val1, physical_dir, _thread->rn[_val2]);
-        set_at_dir(physical_dir,_thread->rn[_val2]);
+        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X y colocando r%d = %d\n", 
+        _val1, physical_dir,_val2, _thread->rn[_val2]);
+        if((*val) != -1) // page fault
+            set_at_dir(physical_dir,_thread->rn[_val2]);
         break;
     case LD:
         (*val) = get_physical(_thread, _val1, &physical_dir);
-        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X\n", _val1, physical_dir);
+        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X\n", 
+        _val1, physical_dir);
         // Coger el valor desde la memoria
+        if((*val) != -1) // page fault
         (*_res) = get_at_dir(physical_dir);
         printf("Dato obtenido %d\n", (*_res));
         break;

@@ -223,7 +223,7 @@ void release_space(int _dir, int _size){
                     if(p->next != NULL)
                         p = p->next;
                     else 
-                        found = -1;
+                        found = -2;
                 }else // Eliminando hueco que sea
                 {
                     if(to_remove == last && to_remove == huecos)
@@ -246,7 +246,7 @@ void release_space(int _dir, int _size){
                         to_remove->next = NULL;
                         to_remove->prev = NULL;
                     }
-                    
+                    enqueueh(q_huecos_reserva, to_remove);
                 }
             }
         }
