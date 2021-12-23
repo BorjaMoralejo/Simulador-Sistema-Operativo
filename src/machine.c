@@ -29,7 +29,7 @@
 #define exit    15
 
 extern unsigned char *memoria;
-
+char op_print[256];
 
 enum operation{ADD, ST, LD, EXIT };
 
@@ -82,7 +82,6 @@ int get_physical(thread_t *_thread, int _virtual, unsigned int *_physical){
     // REHACER lo de tlb, hay que buscar usando el numero de pagina y traducirlo a numero de marco
     unsigned int pagina = _virtual & 0xFFFF00;
     unsigned int offset = _virtual & 0x000000FF;
-    printf("M_1\n");
     // Comprobar que la pagina sea del proceso?
     if((*_thread->enProceso)->mm.code_p > _virtual || (*_thread->enProceso)->mm.end_p < _virtual)
     {
@@ -90,7 +89,6 @@ int get_physical(thread_t *_thread, int _virtual, unsigned int *_physical){
         printf("PAGE FAULT!!!!!\n");
         return -1;
     }
-    printf("M_2: Virtual %u Offset: %d \n", _virtual, offset);
     // mirar tlb en mmu y ver si existe la traduccion instantanea
     i = 0;
     while (found == 0 && i < _thread->mmu->max_entradas)
@@ -106,7 +104,6 @@ int get_physical(thread_t *_thread, int _virtual, unsigned int *_physical){
     
 
     
-    printf("M_3\n");
     // miss, deberia de bloquearse el programa (no tiene cache) (eso esta implementado, solo que esta random, esta en el clock)
     // De todos modos, busca la respuesta aqui para que al desbloquearse lo unico que tenga que hacer sera repetir esto
     if(found == 0)
@@ -115,9 +112,7 @@ int get_physical(thread_t *_thread, int _virtual, unsigned int *_physical){
         dir_op = (pagina - (*_thread->enProceso)->mm.code_p) / PAGE_SIZE;
         dir_traducida = _thread->PTBR[dir_op];        
         // Si esta llena se va a ir sobreescribiendo 
-        printf("M_4: %u dir op %u\n", dir_traducida, dir_op);
         add_to_TLB(_thread, pagina, dir_traducida); 
-        printf("M_5: \n");
         ret = 1;
     }
 
@@ -149,22 +144,30 @@ int do_command(thread_t * _thread){
     // B D L A E
 
     // BUSQUEDA
-    printf("Fetch\n\n");
+    #ifdef DEBUG    
+    printf("Fetch\n\n"); 
+    #endif
     next_action = fetch(_thread);
     if (next_action == -1) // Page fault
         return -2;
+    #ifdef DEBUG
     printf("Decode\n\n");
+    #endif
     // DECODIFICACIÓN
     decode(_thread, &op);
 
     // CARGA DE DATOS
     // Se tiene que obtener los indices de los registros
+    #ifdef DEBUG
     printf("load_op\n\n");
+    #endif
     load_op(_thread, op, &ra, &rb, &rd);
 
 
     // ACCIÓN (?)
+    #ifdef DEBUG
     printf("operate\n\n");
+    #endif
     if (operate (_thread, op, ra, rb, &rs, &ret_get_physical) == -1)
     {
 	    return -1;    // Exit
@@ -174,7 +177,9 @@ int do_command(thread_t * _thread){
 
 
     // ESCRITURA
+    #ifdef DEBUG
     printf("write\n\n");
+    #endif
     if(op != ST)
         write_results(_thread, &rs, &rd);
 
@@ -198,12 +203,18 @@ int fetch(thread_t * _thread){
     virtual_dir = _thread->pc;
     _thread->pc += 4;
     // coger la instruccion y meterla en RI
+    #ifdef DEBUG
     printf("PC %08X\n", _thread->pc);
+    #endif
 	val = get_physical(_thread, virtual_dir, &physical_dir);
+    #ifdef DEBUG
     printf("Physical %u\n", physical_dir);
+    #endif
     if(val != -1)
         _thread->ri = get_at_dir(physical_dir); // Acceder a physical_dir
+    #ifdef DEBUG
     printf("ri = %X\n", _thread->ri);
+    #endif
     return val;
 }
 
@@ -215,29 +226,34 @@ void decode(thread_t * _thread, enum operation *_op){
     (*_thread->enProceso)->mm;
     enum operation op_enum;
     int op = (_thread->ri & mask_decode_op) >> 28;
+    #ifdef DEBUG
     printf("Operación: %d\n", op);
+    #endif
     // Asignando la operacion
     switch(op){
         case ld:
-            printf("LD\n");
+            sprintf(op_print,"LD\n");
             (*_op) = LD;
             break;
         case st:
-            printf("ST\n");
+            sprintf(op_print,"ST\n");
             (*_op) = ST;
             break;
         case add:
-            printf("ADD\n");
+            sprintf(op_print,"ADD\n");
             (*_op) = ADD;
             break;
         case exit:
-            printf("EXIT\n");
+            sprintf(op_print,"EXIT\n");
             (*_op) = EXIT;
             break;
         default:
             printf("Instrucción no valida\n");
             break;
     }
+    #ifdef DEBUG
+    printf("%s",op_print);
+    #endif
 }
 
 /*
@@ -247,30 +263,33 @@ Para ello existen las mascaras mask_decode_(r1, r2, r3, dir)
 void load_op(thread_t * _thread, enum operation _op, int * _ra, int * _rb, int * _rd){
     // cargar operandos accediendo a los registros
     switch(_op){
-case ADD:  // Debe cargar rd, r1 y r2
-	// Pasar de indice a valor
-	(*_ra) = (_thread->ri & mask_decode_r2) >> 20;
-	(*_rb) = (_thread->ri & mask_decode_r3) >> 16;
-	(*_rd) = (_thread->ri & mask_decode_r1) >> 24;
-    printf("Cargando operandos de ADD: rd %d,rf1 %d, rf2 %d\n", (*_rd), (*_ra), (*_rb));
-	break;
-case ST:   // Debe cargar el indice de ra             revisarlo con el enunciado
-	(*_ra) = (_thread->ri & mask_decode_dir);
-    (*_rb) = (_thread->ri & mask_decode_r1) >> 24;
-    printf("Cargando operandos de ST: rd %d,ra %d\n", (*_rb), (*_ra));
-	break;
-case LD:   // Debe cargar el indice de rd
-	(*_rd) = (_thread->ri & mask_decode_r1) >> 24;
-    (*_ra) = (_thread->ri & mask_decode_dir);
-    printf("Cargando operandos de LD: rd %d,ra %08X\n", (*_rd), (*_ra));
-	break;
-case EXIT: // No hace nada, no tiene registros destino ni origen
-	printf("LD exit\n");
-	break;
-default:
-	printf("Esto no debería mostrarse en pantalla\n");
-	break;
+    case ADD:  // Debe cargar rd, r1 y r2
+        // Pasar de indice a valor
+        (*_ra) = (_thread->ri & mask_decode_r2) >> 20;
+        (*_rb) = (_thread->ri & mask_decode_r3) >> 16;
+        (*_rd) = (_thread->ri & mask_decode_r1) >> 24;
+        sprintf(op_print, "Cargando operandos de ADD: rd %d,rf1 %d, rf2 %d\n", (*_rd), (*_ra), (*_rb));
+        break;
+    case ST:   // Debe cargar el indice de ra             revisarlo con el enunciado
+        (*_ra) = (_thread->ri & mask_decode_dir);
+        (*_rb) = (_thread->ri & mask_decode_r1) >> 24;
+        sprintf(op_print, "Cargando operandos de ST: rd %d,ra %d\n", (*_rb), (*_ra));
+        break;
+    case LD:   // Debe cargar el indice de rd
+        (*_rd) = (_thread->ri & mask_decode_r1) >> 24;
+        (*_ra) = (_thread->ri & mask_decode_dir);
+        sprintf(op_print, "Cargando operandos de LD: rd %d,ra %08X\n", (*_rd), (*_ra));
+        break;
+    case EXIT: // No hace nada, no tiene registros destino ni origen
+        sprintf(op_print, "Exit\n");
+        break;
+    default:
+        printf("Default en Load operators\n");
+        break;
     }
+    #ifdef DEBUG
+    printf("%s", op_print);
+    #endif
 }
 
 /*
@@ -284,36 +303,36 @@ int operate(thread_t * _thread, enum operation _op, int _val1, int _val2, int *_
     {
     case ADD:
         (*_res) = _thread->rn[_val1] + _thread->rn[_val2];
-        printf("Sumando r%d y r%d para crear %d\n", _val1, _val2, (*_res));
+        sprintf(op_print, "Sumando r%d y r%d para crear %d\n", _val1, _val2, (*_res));
         break;
     case ST:
     // Cambiar el valor en memoria
 	// Acceder a la direccion fisica de memoria y cambiar el valor
         (*val) = get_physical(_thread, _val1, &physical_dir);
-        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X y colocando r%d = %d\n", 
+        sprintf(op_print, "Accediendo a la posicion de memoria virtual %08X, physical %08X y colocando r%d = %d\n", 
         _val1, physical_dir,_val2, _thread->rn[_val2]);
         if((*val) != -1) // page fault
             set_at_dir(physical_dir,_thread->rn[_val2]);
         break;
     case LD:
         (*val) = get_physical(_thread, _val1, &physical_dir);
-        printf("Accediendo a la posicion de memoria virtual %08X, physical %08X\n", 
-        _val1, physical_dir);
         // Coger el valor desde la memoria
         if((*val) != -1) // page fault
         (*_res) = get_at_dir(physical_dir);
-        printf("Dato obtenido %d\n", (*_res));
+        sprintf(op_print, "Accediendo a la posicion de memoria virtual %08X, physical %08X y dato obtenido %d\n", 
+        _val1, physical_dir, (*_res));
         break;
     case EXIT:
         // Se debe parar la ejecucion, el programa ha terminado
-        printf("EXIT\n");
+        sprintf(op_print,"EXIT\n");
         ret = -1;
         break;
     default:
-        printf("No se como he acabado aquí\n");
+        printf("Default case Operate\n");
         ret = -1;
         break;
     }
+    printf("%s", op_print);
     return ret;
 }
 
@@ -327,8 +346,11 @@ void write_results(thread_t *_thread, int *_res, int * _rd){
     // acceder al registro del indice rd y meter _res
     if ((*_rd) < 0 || (*_rd) > 15)
     {
-	printf("Indice fuera de rango %d\n", (*_rd));
+	printf("ERROR: Indice fuera de rango %d\n", (*_rd));
 	return;
     }
     _thread->rn[(*_rd)] = (*_res);
+    #ifdef DEBUG
+    printf("r%d = %d\n",(*_rd),(*_res));
+    #endif
 }

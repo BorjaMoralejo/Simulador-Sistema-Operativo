@@ -9,6 +9,7 @@
 #include "randomp.h"
 
 char line[8];
+char direccion[16], datos[16];
 extern unsigned char *memoria;
 
 
@@ -26,8 +27,8 @@ void init_loader(){
 void * start_loader(void * _args){    
     pid_t2 pid_count = 0;
     pcb_t * pcb;
-    int i = 0, ret;    
-    int max_program = 999;
+    int i = paramStruct.start_number, ret;    
+    int max_program = paramStruct.start_number + paramStruct.n_of_programs;
     while (1)
     {
         pthread_mutex_lock(&loader_mtx);
@@ -90,8 +91,9 @@ int load_program(int _n, pid_t2 _pid){
     unsigned int code_start, code_size, data_start, data_size;
     unsigned int dir_code, dir_data;
     unsigned int binary;
-    FILE* fd;
-    sprintf(prog_name, "programs/prog%03d.elf", _n);
+    FILE *fd;
+    
+    sprintf(prog_name, "programs/%s%03d.elf", paramStruct.name, _n);
 
     /*(hilo);
 
@@ -240,6 +242,8 @@ void unload_program(pcb_t * _pcb){
 
     unsigned int dir_code, dir_data, code_size, data_size;
     unsigned int code_pages;
+    int i;
+    FILE *fd;
     // Conseguir los datos de dir_code, dir_data, code_size y data_size 
     // para poder liberar los espacios en la memoria
 
@@ -259,26 +263,33 @@ void unload_program(pcb_t * _pcb){
 
     code_size = _pcb->mm.data_p - _pcb->mm.code_p;
     data_size = _pcb->mm.end_p - _pcb->mm.data_p;
-    printf("U1\n");
+    printf("Descargando programa %d ...\n", _pcb->pid);
     code_pages = (code_size / PAGE_SIZE) + ((code_size % PAGE_SIZE) == 0 ? 0 : 1);
 
     // Dir_code es la dirección física de la parte de code y esta siempre será la primera dirección.
     dir_code = _pcb->mm.pgb[0];
-    printf("U2\n");
     dir_data = _pcb->mm.pgb[code_pages];
+    sprintf(prog_name, "programs/%s%03d.end", paramStruct.name, _pcb->pid);
+
+    fd = fopen(prog_name, "w+");
+
+    for(i = 0; i < data_size/4; i++)
+    {
+        sprintf(direccion, "%08X ", (_pcb->mm.data_p + i*4));
+        sprintf(datos, "%8d\n", get_at_dir(dir_data + i*4 ));
+        fwrite( direccion,1,strlen(direccion), fd);
+        fwrite( datos,1,strlen(datos), fd);
+    }
+
+    fclose(fd);
 
     // Liberando memoria ocupada por el programa de la memoria fisica
-    printf("U3 %d %d\n", dir_code, code_size);
     release_space(dir_code, code_size);
-    printf("U4 %d %d\n", dir_data, data_size);
     release_space(dir_data, data_size);
-    printf("U5\n");
 
 
     // Sacar de la tabla de páginas
     free(_pcb->mm.pgb);
-    printf("U6\n");
     _pcb->state = PCB_STATE_DEAD;
     putPCB(_pcb);
-    printf("U7\n");
 }

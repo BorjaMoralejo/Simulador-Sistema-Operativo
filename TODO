@@ -56,21 +56,20 @@
 	- [/] Al intentar cargar el programa tener en cuenta los errores
 	
 ORDEN: Memoria, Maquina con componentes, tablas, loader
-- [ ] Observaciones finales
-	- [ ] Los segmentos de instrucciones y datos pueden estar en la misma página.
+- [/] Observaciones finales
+	- [-] Los segmentos de instrucciones y datos pueden estar en la misma página.
 
-- [ ] Parametros
-	- [ ] Nombre de programa
-	- [ ] Inicio de programa
-	- [ ] Fin de programa
+- [/] Parametros
+	- [/] Nombre de programa
+	- [/] Inicio de programa
+	- [/] Fin de programa
 
-- [ ] Printear:
-	- [ ] Eliminar trazas
-	- [ ] Mostrar porcentaje de memoria usado
+- [/] Printear:
+	- [/] Eliminar trazas
+	- [/] Mostrar porcentaje de memoria usado
 
-- [ ] Mejoras
-	- [ ] Implementar todas las operaciones
-	- [ ] Función para volcar resultados de programa en fichero tras finalizar (hacerlo como heracles)
+- [/] Mejoras
+	- [/] Función para volcar resultados de programa en fichero tras finalizar
 
 
 - [/] Generar tablas para los programas cargados en memoria

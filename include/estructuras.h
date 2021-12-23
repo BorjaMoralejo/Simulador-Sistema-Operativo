@@ -64,6 +64,11 @@ typedef struct param_init{
 
 	int politica_scheduler_master; // RoundRobin, affinity
 
+
+	int n_of_programs;		// Número de programas que se van a buscar
+	char* name;				// Nombre que compone el programa
+	int start_number;		// Número de comienzo de los programas
+
 	int n_cpu;
 	int	n_core;
 	int n_thread;

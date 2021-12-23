@@ -52,32 +52,35 @@ int main(int argc, char *argv[]){
 	sched_disp_data_t * sched_arr;
 	int n_slaves;
 	// Poniendo los valores default de las variables
-	paramStruct.nPool = DEFAULT_POOLSIZE;
-	paramStruct.nElementosCola = DEFAULT_QUEUESIZE; 
-	paramStruct.n_cpu = DEFAULT_CPU;
-	paramStruct.n_core = DEFAULT_CORE;
-	paramStruct.n_thread = DEFAULT_THREAD;
-	paramStruct.clock_manual = DEFAULT_CLOCK_MANUAL;
+	paramStruct.nPool 			= DEFAULT_POOLSIZE;
+	paramStruct.nElementosCola 	= DEFAULT_QUEUESIZE; 
+	paramStruct.n_cpu 			= DEFAULT_CPU;
+	paramStruct.n_core 			= DEFAULT_CORE;
+	paramStruct.n_thread 		= DEFAULT_THREAD;
+	paramStruct.clock_manual 	= DEFAULT_CLOCK_MANUAL;
 	paramStruct.clock_retardado = DEFAULT_CLOCK_RETARDADO;
-	paramStruct.freq_clock_ms = DEFAULT_FREQ_CLOCK_MS;
-	paramStruct.freq_disps_sched = DEFAULT_FREQ_DISP_SCHED;
-	paramStruct.freq_pgen = DEFAULT_FREQ_PGEN;
-	paramStruct.ttl_base = DEFAULT_TTL_BASE;
-	paramStruct.ttl_max = DEFAULT_TTL_MAX;
+	paramStruct.freq_clock_ms 	= DEFAULT_FREQ_CLOCK_MS;
+	paramStruct.freq_disps_sched= DEFAULT_FREQ_DISP_SCHED;
+	paramStruct.freq_pgen 		= DEFAULT_FREQ_PGEN;
+	paramStruct.ttl_base 		= DEFAULT_TTL_BASE;
+	paramStruct.ttl_max 		= DEFAULT_TTL_MAX;
 
-	paramStruct.blocked_list_size = DEFAULT_BLOCKED_LIST_SIZE;
-	paramStruct.block_chance = DEFAULT_BLOCK_CHANCE;
+	paramStruct.blocked_list_size= DEFAULT_BLOCKED_LIST_SIZE;
+	paramStruct.block_chance 	 = DEFAULT_BLOCK_CHANCE;
 	paramStruct.max_blocked_time = DEFAULT_MAX_BLOCKED_TIME;
-	paramStruct.random_priority = DEFAULT_RANDOM_PRIORITY;
-	paramStruct.random_affinity = DEFAULT_RANDOM_AFFINITY;
-	paramStruct.freq_reschedule = DEFAULT_FREQ_DISP_SCHED;
+	paramStruct.random_priority  = DEFAULT_RANDOM_PRIORITY;
+	paramStruct.random_affinity  = DEFAULT_RANDOM_AFFINITY;
+	paramStruct.freq_reschedule  = DEFAULT_FREQ_DISP_SCHED;
 	paramStruct.quantum_per_prio = DEFAULT_Q_PER_PRIORITY;
-	paramStruct.max_prio = DEFAULT_MAX_PRIO;
-	paramStruct.pcb_generated = DEFAULT_PCB_GENERATED;
+	paramStruct.max_prio 		 = DEFAULT_MAX_PRIO;
+	paramStruct.pcb_generated 	 = DEFAULT_PCB_GENERATED;
 
 	paramStruct.politica_scheduler_master = DEFAULT_MASTER_SCHEDULER_BEHAVIOUR;
 	//paramStruct.politica_scheduler_slave = 0;
 
+	paramStruct.n_of_programs = DEFAULT_N_OF_PROGRAMS;
+	paramStruct.name 		  = DEFAULT_NAME;
+	paramStruct.start_number  = DEFAULT_START_NUMBER;
 	// Tratar parámetros
 	procesarParametros(argc, argv, &paramStruct);
 	
@@ -185,7 +188,9 @@ void procesarParametros(int argc, char *argv[], param_init_t * _params){
  	int opt, longindex;
 	int buff;
 	opterr = 0;
-
+	int n_of_programs;		// 
+	char* name;				// Nombre que compone el programa
+	int start_number;		// 
  	struct option long_options[] = {
 	{"poolsize", required_argument, 0, 'p' },
 	{"queuesize", required_argument, 0, 'q' },
@@ -208,14 +213,17 @@ void procesarParametros(int argc, char *argv[], param_init_t * _params){
 	{"max_prio", required_argument, 0, 'e' },
 	{"random_priority", required_argument, 0, 'w' },
 	{"random_affinity", required_argument, 0, 'a' },
-	{"pcb_generated", required_argument, 0, 'n' },
+	//{"pcb_generated", required_argument, 0, 'n' },
 	{"politica_scheduler_master", required_argument, 0, 'y' },
+	{"n_of_programs", required_argument, 0, 'n' },
+	{"name", required_argument, 0, 'o' },
+	{"start_number", required_argument, 0, 'v' },
 	{"help", no_argument, 0, 'h' },
 	{0, 0, 0, 0 }
 	};
 
 	longindex =0;
-	while ((opt = getopt_long(argc, argv,"hmq:p:c:k:t:rl:d:g:b:x:u:s:f:j:z:e:w:a:n:y:", long_options, &longindex )) != -1) 
+	while ((opt = getopt_long(argc, argv,"hmq:p:c:k:t:rl:d:g:b:x:u:s:f:j:z:e:w:a:n:y:o:v:", long_options, &longindex )) != -1) 
 	{
 
 		switch(opt) 
@@ -285,11 +293,18 @@ void procesarParametros(int argc, char *argv[], param_init_t * _params){
 		case 'a': /* random_affinity */
 			getInt(optarg, 'a', &_params->random_affinity);
 			break;
-		case 'n': /* pcb_generated */
-			getInt(optarg, 'n', &_params->pcb_generated);
+		case 'n': /* n_of_programs */
+			getInt(optarg, 'n', &_params->n_of_programs);
 			break;
 		case 'y': /* politica_scheduler_master */
 			getInt(optarg, 'y', &_params->politica_scheduler_master);
+			break;
+		case 'o': /* name */
+			_params->name = malloc(48);
+			sprintf(_params->name,"%s", optarg);
+			break;
+		case 'v': /* start_number */
+			getInt(optarg, 'o', &_params->start_number);
 			break;
 		case 'h': /* -h or --help */
 		case '?':
@@ -335,11 +350,14 @@ void procesarParametros(int argc, char *argv[], param_init_t * _params){
 			"Nivel máximo de prioridad que se puede asignar de forma aleatoria: %d\n", DEFAULT_RANDOM_PRIORITY);
 			printf (" -a, --random_affinity=n\t\t"
 			"Poner afinidad aleatoria o no: %d\n", DEFAULT_RANDOM_AFFINITY);
-			printf (" -n, --pcb_generated=n\t\t\t"
-			"Numero de procesos generados por tick de PGenerator: %d\n", DEFAULT_PCB_GENERATED);
+			printf (" -n, --n_of_programs=n\t\t\t"
+			"Numero de programas que se van a buscar: %d\n", DEFAULT_N_OF_PROGRAMS);
 			printf (" -y, --politica_scheduler_master=n\t"
 			"Política del scheduler maestro: %d\n", DEFAULT_MASTER_SCHEDULER_BEHAVIOUR);
-			
+			printf (" -v, --start_number=n\t\t\t"
+			"Numero de comienzo de los programas: %d\n", DEFAULT_START_NUMBER);
+			printf (" -o, --name=n\t\t\t"
+			"Nombre que compone el programa: %s\n", DEFAULT_NAME);
 			printf (" -h, --help\t\t\t\t"
 			"Ayuda\n");
 			exit (2);

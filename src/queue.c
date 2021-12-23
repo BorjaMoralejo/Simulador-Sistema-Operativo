@@ -84,7 +84,6 @@ void inicializar_queue_hueco(queue_hueco_t * _cola, int _maxElem){
 char enqueueh(queue_hueco_t *_q, huecos_node_t *_elem){
 	
 	if(_q->nElem >= _q->maxElem){
-		printf("Ojo, la cola está llena! %d \n", _q->nElem);
 		return 1; // está llena la cola
 	}
 	_q->malloc[_q->lastPos] = _elem;
@@ -95,10 +94,8 @@ char enqueueh(queue_hueco_t *_q, huecos_node_t *_elem){
 }
 huecos_node_t * dequeueh(queue_hueco_t *_cola){
 	if(_cola->nElem == 0){
-		printf("COLA VACIA\n");
 		return NULL;
 	}
-	printf("Dequeueing %d\n", _cola->firstPos);
 	huecos_node_t * _ret = _cola->malloc[_cola->firstPos];
 	_cola->nElem--;
 	//printf("Pillando de %d %ld \n",_cola->firstPos,(long int) &_cola->malloc[_cola->firstPos]);

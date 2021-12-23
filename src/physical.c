@@ -16,6 +16,7 @@
 #define RESERVED_END   0x3FFFFF
 
 unsigned char *memoria;
+int used_mem = 0;
 typedef struct pagina pagina_t;
 pagina_t *pages;
 huecos_node_t * huecos, *last;
@@ -36,24 +37,17 @@ void init_physical(){
     // Reservar memoria: 24 direccionamiento + tamaño de palabra
     memoria = malloc(1<<24);
 
-    printf("M1\n");
     // Crear lista de huecos
     q_huecos_reserva = malloc(sizeof(queue_hueco_t));
-    printf("M2\n");
     inicializar_queue_hueco(q_huecos_reserva, segmentos_max);
-    printf("M3\n");
     // Crear primer elemento y reservar direcciones de kernel
     huecos_node_t *primer = dequeueh(q_huecos_reserva);
-    printf("M4\n");
     primer->dir = 0x3FFFFF;
     primer->size = 0xFFFFFF-0x3FFFFF;
     primer->next = NULL;
     primer->prev = NULL;
     huecos = primer;
     last = huecos;
-    printf("M5\n");
-    // Inicializando PTBR
-
     /*
     Palabras de 4B
     Pagina de 256B
@@ -116,6 +110,7 @@ int check_space(unsigned int _req_space, int *_dir){
         max->dir += redondeo_arriba*PAGE_SIZE;
         ret = 0;
     }
+    used_mem += redondeo_arriba*PAGE_SIZE;
     return ret;
 }
 
@@ -132,7 +127,6 @@ void release_space(int _dir, int _size){
     if (_size % PAGE_SIZE != 0)
         tam++;
 
-    printf("R1\n");
     found = 0;
     /* 
     Comprobar que alguno sumando dir+size de esa posicion para apendizarlo
@@ -151,11 +145,9 @@ void release_space(int _dir, int _size){
     */
     while (found == 0)
     {
-        printf("%d + %d == %d?\n", p->dir, p->size, _dir);
-        printf("%d + %d == %d?\n", _dir, _size, p->dir);
         if (p->dir + p->size == _dir)
         {
-            printf("MERGING1\n");
+            used_mem -= _size;
             // Simplemente se le aumenta el size
             found = 1;
             p->size += tam*PAGE_SIZE;
@@ -165,7 +157,7 @@ void release_space(int _dir, int _size){
             nuestro = p;
         }else if(_dir + _size == p->dir)
         {
-            printf("MERGING2\n");
+            used_mem -= _size;
             // Se le aumenta el size y se le cambia la dirección de inicio
             found = 1;
             p->size += tam*PAGE_SIZE;
@@ -185,7 +177,6 @@ void release_space(int _dir, int _size){
     // Remerging
     if(found == 1)
     {
-        printf("Remerging\n");
         char did_something = 1; 
         while (did_something == 1)
         {
@@ -194,11 +185,8 @@ void release_space(int _dir, int _size){
             found = 0;
             while (found == 0)
             {
-                printf("%d + %d == %d?\n", p->dir, p->size, _dir);
-                printf("%d + %d == %d?\n", _dir, _size, p->dir);
                 if (p->dir + p->size == _dir)
                 {
-                    printf("REMERGING1\n");
                     found = 1;
                     p->size += nuestro->size;
                     did_something = 1;
@@ -209,7 +197,6 @@ void release_space(int _dir, int _size){
                     _size = p->size;
                 }else if(_dir + _size == p->dir)
                 {
-                    printf("REMERGING2\n");
                     found = 1;
                     nuestro->size += p->size;
                     did_something = 1;
@@ -218,6 +205,11 @@ void release_space(int _dir, int _size){
                     _dir = nuestro->dir;
                     _size = nuestro->size;
                 }
+
+
+
+
+
                 if(found == 0)
                 {
                     if(p->next != NULL)
@@ -253,22 +245,23 @@ void release_space(int _dir, int _size){
         
     }
 
-    printf("R2\n");
     // Si ninguno da este valor, se coge un nodo y se asigna _dir y size
     if (found == -1)
     {
-      p = dequeueh (q_huecos_reserva);
-      printf("R2.2\n");
-      last->next = p;
-      printf("R3\n");
-      p->next = NULL;
-      p->prev = last;
-      last = p;
-      p->dir = _dir;
-      p->size = tam*PAGE_SIZE;
-      printf("dir: %d tam: %d size: %d\n", _dir, _size, tam*PAGE_SIZE);
+        p = dequeueh (q_huecos_reserva);
+        if(p == NULL) // No debería quedarse sin huecos de memoria, pero si ocurre, hay un error
+        {
+            printf("Se ha quedado sin huecos de memoria principal, esto es grave\n");
+            exit(9);
+        }
+        last->next = p;
+        p->next = NULL;
+        p->prev = last;
+        last = p;
+        p->dir = _dir;
+        p->size = tam*PAGE_SIZE;
+        used_mem -= _size;
     }
-    printf("R4\n");
 }
 
 /*
@@ -278,7 +271,6 @@ pero la palabra son 4 bytes.
 Entonces en esta función lo unico que se hace es aumentar el offset de la dirección y va contruyendo el entero
 */
 int get_at_dir(unsigned int _marco){
-    printf("get_at_dir marco %u\n", _marco);
     int ret = 0x00000000;
     ret = ret | (memoria[_marco + 0] << 0);
     ret = ret | (memoria[_marco + 1] << 8);

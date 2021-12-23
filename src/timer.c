@@ -114,19 +114,19 @@ extern pthread_cond_t loader_cond;
 
 void timer_loader(int _time){
     
-    if(_time % paramStruct.freq_pgen == 0) // tick pgenerator
+    if(_time % paramStruct.freq_pgen == 0) // tick loader
     {
-        printf("tick generator%d?\n", _time);
-        // Via libre a generar proceso
+        printf("tick loader%d?\n", _time);
+        // Via libre a cargar programa
 
-        // Se comunica con pgenerator y le da luz verde
+        // Se comunica con loader y le da luz verde
         loader_flag = 0;
         pthread_cond_signal(&loader_cond);
 
-        // Esperar a que el pgenerator haya terminado
+        // Esperar a que el loader haya terminado
         while(loader_flag == 0);  
 
-        printf("tick generator%d!\n", _time);
+        printf("tick loader%d!\n", _time);
 
     }
 }

@@ -11,6 +11,7 @@
 pthread_mutex_t timer_mtx;
 pthread_cond_t timer_cond, br_timer_cond;
 int nDone = 0, nTimers=2;
+extern int used_mem;
 
 void init_clock(){
     pthread_mutex_init(&timer_mtx, NULL);
@@ -28,7 +29,7 @@ void* start_clock(void * _args){
         // Sincronizar timers
         pthread_mutex_lock(&timer_mtx);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n------------Pulso---------\n\n");
-
+        printf("Memoria usada: %d (%d%%)\n", used_mem, used_mem * 100  / 12582912);
         printf("Idles: %d\t CPU \t CORE \t THREAD\t PID \t TTL \t  Q\t  PRIO\n", machine.idle_threads);
         // avanzar tiempo de la maquina(cpu,cores,hilos)
         for(cpu = 0; cpu < paramStruct.n_cpu; cpu++)
@@ -47,7 +48,7 @@ void* start_clock(void * _args){
                             if(action == -1)
                             {
                                 hilo->state = PCB_STATE_DEAD;
-                                printf("Terminando proceso %d\n", hilo->pid);
+                                //printf("Terminando proceso %d\n", hilo->pid);
                             } else if (action == -2)
                             {
                                 hilo->state = PCB_STATE_DEAD;
