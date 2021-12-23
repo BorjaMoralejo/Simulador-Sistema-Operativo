@@ -5,6 +5,8 @@
 
 #include "randomp.h"
 #include "globals.h"
+#include "queue.h"
+#include "machine.h"
 
 pthread_mutex_t timer_mtx;
 pthread_cond_t timer_cond, br_timer_cond;
@@ -39,16 +41,23 @@ void* start_clock(void * _args){
                         //
                         if(hilo->state == PCB_STATE_RUNNING)
                         {
-                            action = do_command(machine.cpus[cpu].cores[core].hilos[thread]);
+                            action = do_command(&machine.cpus[cpu].cores[core].threads[thread]);
                             if(action == -1)
+                            {
                                 hilo->state = PCB_STATE_DEAD;
-                
-                                        if (action == 1 && getRandom(0, paramStruct.block_chance) == 0) // !lucky
-                                        {
-                                            // SE BLOQUEA
-                                            hilo->blocked = paramStruct.max_blocked_time;
-                                            hilo->state = PCB_STATE_BLOCKED;
-                                        }
+                                printf("Terminando proceso %d\n", hilo->pid);
+                            } else if (action == -2)
+                            {
+                                hilo->state = PCB_STATE_DEAD;
+                                printf("Page Fault con el proceso %d!!\n", hilo->pid);
+                            }
+
+                            if (action == 1 && getRandom(0, paramStruct.block_chance) == 0) // !lucky
+                            {
+                                // SE BLOQUEA
+                                hilo->blocked = paramStruct.max_blocked_time;
+                                hilo->state = PCB_STATE_BLOCKED;
+                            }
                         }
                         switch (hilo->state)    // BIRD
                         {

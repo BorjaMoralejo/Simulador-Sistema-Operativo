@@ -35,7 +35,7 @@ Este fichero contiene los defines del proyecto: Simulador de Sistema Operativo
 enum enum_threadName {CLOCK_TH, TIMER0_TH, TIMER1_TH, SCHEDULER_TH, PGEN_TH, NTHREADS};
 
 // Timer
-enum enum_timerFuncTypes {DISPATCHER_SCHEDULER_FUNC, PGENERATOR_FUNC};
+enum enum_timerFuncTypes {DISPATCHER_SCHEDULER_FUNC, PGENERATOR_FUNC, LOADER_FUNC};
 
 #endif
 

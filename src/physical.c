@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "physical.h"
 #include "queue.h"
 
@@ -15,7 +16,6 @@
 #define RESERVED_END   0x3FFFFF
 
 unsigned char *memoria;
-unsigned char *inicio_tablas;
 typedef struct pagina pagina_t;
 pagina_t *pages;
 huecos_node_t * huecos, *last;
@@ -35,16 +35,23 @@ void init_physical(){
 
     // Reservar memoria: 24 direccionamiento + tamaño de palabra
     memoria = malloc(1<<24);
+
+    printf("M1\n");
     // Crear lista de huecos
+    q_huecos_reserva = malloc(sizeof(queue_hueco_t));
+    printf("M2\n");
     inicializar_queue_hueco(q_huecos_reserva, segmentos_max);
+    printf("M3\n");
     // Crear primer elemento y reservar direcciones de kernel
     huecos_node_t *primer = dequeueh(q_huecos_reserva);
+    printf("M4\n");
     primer->dir = 0x3FFFFF;
     primer->size = 0xFFFFFF-0x3FFFFF;
     primer->next = NULL;
     primer->prev = NULL;
     huecos = primer;
-
+    last = huecos;
+    printf("M5\n");
     // Inicializando PTBR
 
     /*
@@ -64,7 +71,6 @@ void init_physical(){
     */
 
     // 0x000000 0x3FFFFF Reservado para kernel, son 22bits
-    inicio_tablas = &memoria[0]; 
 
     // Entrada de la tabla de paginas (lo que hay en la TLB)
     // V:       valided
@@ -106,8 +112,8 @@ int check_space(unsigned int _req_space, int *_dir){
     }else if(max->size >redondeo_arriba*PAGE_SIZE)   // Decrementa tamaño y recalcula la dirección
     { 
         max->size -= redondeo_arriba*PAGE_SIZE;
-        max->dir += redondeo_arriba*PAGE_SIZE;
         (*_dir) = max->dir;
+        max->dir += redondeo_arriba*PAGE_SIZE;
         ret = 0;
     }
     return ret;
@@ -117,7 +123,8 @@ int check_space(unsigned int _req_space, int *_dir){
 Recupera el espacio que habia reservado para esa dirección y si es posible lo combina con otros nodos.
 */
 void release_space(int _dir, int _size){
-    huecos_node_t * p = huecos;
+    huecos_node_t *p = huecos;
+    huecos_node_t *nuestro = NULL, *to_remove = NULL;
     int found = 0;
     int i;
     int tam;
@@ -125,37 +132,143 @@ void release_space(int _dir, int _size){
     if (_size % PAGE_SIZE != 0)
         tam++;
 
+    printf("R1\n");
+    found = 0;
+    /* 
+    Comprobar que alguno sumando dir+size de esa posicion para apendizarlo
+    Existen dos posibilidades:
+        - Se une con la de "arriba"
+        - Se une con la de "abajo"
+    ¿A qué me refiero con arriba y abajo?
+    Imaginemos la memoria como una lista vertical.
+    La dirección de "arriba" + size (del otro), que se extiende hacia abajo en la lista, 
+    llega hasta justo _dir, este es el caso 1.
+    Para el caso 2, llegamos desde la dirección _dir + _size hasta dirección de "abajo".
+    No obstante, ¿Qué ocurre si está como un bocadillo? Las direcciones de "arriba" y "abajo"
+    combinados con _dir y _size crean un solo bloque. En este caso, está la parte de remerging.
 
-    // Comprobar que alguno sumando dir+size de esa posicion para apendizarlo
-    while (found == 0 && p->next != NULL)
+    
+    */
+    while (found == 0)
     {
+        printf("%d + %d == %d?\n", p->dir, p->size, _dir);
+        printf("%d + %d == %d?\n", _dir, _size, p->dir);
         if (p->dir + p->size == _dir)
         {
+            printf("MERGING1\n");
+            // Simplemente se le aumenta el size
             found = 1;
             p->size += tam*PAGE_SIZE;
+            
+            _dir = p->dir;
+            _size = p->size;
+            nuestro = p;
+        }else if(_dir + _size == p->dir)
+        {
+            printf("MERGING2\n");
+            // Se le aumenta el size y se le cambia la dirección de inicio
+            found = 1;
+            p->size += tam*PAGE_SIZE;
+            p->dir = _dir;
+
+            _dir = p->dir;
+            _size = p->size;
+            nuestro = p;
         }
-        p = p->next;
+        if(found == 0)
+        if(p->next != NULL)
+            p = p->next;
+        else 
+            found = -1;
     }
 
+    // Remerging
+    if(found == 1)
+    {
+        printf("Remerging\n");
+        char did_something = 1; 
+        while (did_something == 1)
+        {
+            did_something = 0;
+            p = huecos;
+            found = 0;
+            while (found == 0)
+            {
+                printf("%d + %d == %d?\n", p->dir, p->size, _dir);
+                printf("%d + %d == %d?\n", _dir, _size, p->dir);
+                if (p->dir + p->size == _dir)
+                {
+                    printf("REMERGING1\n");
+                    found = 1;
+                    p->size += nuestro->size;
+                    did_something = 1;
+                    // Aqui se tiene que quitar el hueco nuestro
+                    to_remove = nuestro;
+                    nuestro = p;
+                    _dir = p->dir;
+                    _size = p->size;
+                }else if(_dir + _size == p->dir)
+                {
+                    printf("REMERGING2\n");
+                    found = 1;
+                    nuestro->size += p->size;
+                    did_something = 1;
+                    // Aqui se tiene que quitar p de la lista
+                    to_remove = p;
+                    _dir = nuestro->dir;
+                    _size = nuestro->size;
+                }
+                if(found == 0)
+                {
+                    if(p->next != NULL)
+                        p = p->next;
+                    else 
+                        found = -1;
+                }else // Eliminando hueco que sea
+                {
+                    if(to_remove == last && to_remove == huecos)
+                    {
+                        printf("Algo ha ido horriblemente mal, to_remove == last == huecos\n");
+                    }else if (to_remove == last)
+                    {
+                        to_remove->prev->next = NULL;
+                        last = to_remove->prev;
+                        to_remove->prev = NULL;
+                    }else if(to_remove == huecos)
+                    {
+                        to_remove->next->prev = NULL;
+                        huecos = to_remove->next;
+                        to_remove->next = NULL;
+                    }else 
+                    {
+                        to_remove->next->prev = to_remove->prev;
+                        to_remove->prev->next = to_remove->next;
+                        to_remove->next = NULL;
+                        to_remove->prev = NULL;
+                    }
+                    
+                }
+            }
+        }
+        
+    }
+
+    printf("R2\n");
     // Si ninguno da este valor, se coge un nodo y se asigna _dir y size
-    if (found == 0)
+    if (found == -1)
     {
       p = dequeueh (q_huecos_reserva);
+      printf("R2.2\n");
       last->next = p;
+      printf("R3\n");
       p->next = NULL;
       p->prev = last;
       last = p;
       p->dir = _dir;
       p->size = tam*PAGE_SIZE;
+      printf("dir: %d tam: %d size: %d\n", _dir, _size, tam*PAGE_SIZE);
     }
-
-    // Quita la entrada de la tabla de paginas
-    for(i = 0; i < 1 << 16; i++)
-    {
-        if(inicio_tablas[i] == _dir)
-            inicio_tablas[i] = 0xFFFFFF;
-    }
-    
+    printf("R4\n");
 }
 
 /*
@@ -165,6 +278,7 @@ pero la palabra son 4 bytes.
 Entonces en esta función lo unico que se hace es aumentar el offset de la dirección y va contruyendo el entero
 */
 int get_at_dir(unsigned int _marco){
+    printf("get_at_dir marco %u\n", _marco);
     int ret = 0x00000000;
     ret = ret | (memoria[_marco + 0] << 0);
     ret = ret | (memoria[_marco + 1] << 8);
@@ -179,9 +293,9 @@ se encarga de descomponer el _valor que se va a almacenar en los 4 bytes que com
 Se utilizan mascaras para ello.
 */
 void set_at_dir(unsigned int _marco, int _valor){
-    memoria[_marco + 0] = _valor & 0x000000FF;
-    memoria[_marco + 1] = _valor & 0x0000FF00;
-    memoria[_marco + 2] = _valor & 0x00FF0000;
-    memoria[_marco + 3] = _valor & 0xFF000000;
+    memoria[_marco + 0] = (unsigned char) ((_valor & 0x000000FF) >> 0 );
+    memoria[_marco + 1] = (unsigned char) ((_valor & 0x0000FF00) >> 8 );
+    memoria[_marco + 2] = (unsigned char) ((_valor & 0x00FF0000) >> 16);
+    memoria[_marco + 3] = (unsigned char) ((_valor & 0xFF000000) >> 24);
 }
 

@@ -21,6 +21,8 @@
 #include "timer.h"
 #include "scheduler.h"
 #include "pgenerator.h"
+#include "loader.h"
+#include "physical.h"
 
 #define PRINTF_EN 1
 
@@ -83,6 +85,8 @@ int main(int argc, char *argv[]){
 	| Inicialización de los elementos |
 	*---------------------------------*/
 
+	// Iniciando memoria physical
+	init_physical();
 	// 	Almacenador de PBS
 	inicializar_estructura(paramStruct.nPool);
 	// 	Indexador de PBS
@@ -95,7 +99,7 @@ int main(int argc, char *argv[]){
 	// Inicializar elementos de sincronización
 	init_clock();
 	init_scheduler(&sched_arr);
-	init_pgen();
+	init_loader();
 
 	/*------------------------*
 	 |	Lanzamiento de hilos  |
@@ -122,11 +126,18 @@ int main(int argc, char *argv[]){
 	pthread_create(&arrThreads[TIMER0_TH], NULL, &start_timer, arrParametros);
 
 	// Timer de pgenerator
+	/*
 	arrParametros = malloc(sizeof(short int)*2); // falta liberar memoria
 	((short *)arrParametros)[0] = 0;	 
 	((short *)arrParametros)[1] = PGENERATOR_FUNC;
 	pthread_create(&arrThreads[TIMER1_TH], NULL, &start_timer, arrParametros);
+	*/
 
+	// Timer de loader
+	arrParametros = malloc(sizeof(short int)*2); // falta liberar memoria
+	((short *)arrParametros)[0] = 0;	 
+	((short *)arrParametros)[1] = LOADER_FUNC;
+	pthread_create(&arrThreads[TIMER1_TH], NULL, &start_timer, arrParametros);
 
 	// ----------SCHEDULER MAESTRO------------
 	pthread_create(&arrThreads[SCHEDULER_TH], NULL, &start_schedule_master, sched_arr);
@@ -137,7 +148,7 @@ int main(int argc, char *argv[]){
 
 	
 	// ----------PGenerator------------
-	pthread_create(&arrThreads[PGEN_TH], NULL, &start_pgenerator, NULL);
+	pthread_create(&arrThreads[PGEN_TH], NULL, &start_loader, NULL);
 
 	printf("Hilos iniciados\n");
 

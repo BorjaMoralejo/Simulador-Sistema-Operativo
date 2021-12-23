@@ -27,21 +27,23 @@ void dispatcher(sched_disp_data_t * sched_d_d){
         // Pillando y reseteando variables cada bucle
         context_change = 0;
         hilo = &assigned_core->threads[thread];
-        p_hilo = hilo.enProceso;
-        //printf("Trabajando con Hilo %d \n", thread);
-        // Hay un proceso en este hilo, comprobar si ha terminado o si se ha quedado sin quantum
+        p_hilo = hilo->enProceso;
+
+
+        // Ahora mira si hay un proceso en el hilo o no
         if ( (*p_hilo) != NULL ) 
         {
-            //printf("Hilo no es null \n");
+            // Hay un proceso en este hilo, comprobar si ha terminado o si se ha quedado sin quantum
+
             // Según la razón de entrada determinar si le toca cambiar de contexto o no
-            if ( (*p_hilo)->ttl <= 0 )                          // Ha terminado
+            if ((*p_hilo)->state == PCB_STATE_DEAD)                          // Ha terminado
             {
                 context_change = 1;
                 printf("\tSacando proceso con PID=%d por finalización!\n", (*p_hilo)->pid);
                 // Lo manda de vuelta a la memoria principal, el proceso ha terminado
 
                 (*p_hilo)->state = PCB_STATE_DEAD;
-                putPCB(*p_hilo);
+                unload_program((*p_hilo));
             }
             else if ( (*p_hilo)->q <= 0)                        // Se ha quedado sin quantum
             {
@@ -93,7 +95,7 @@ void dispatcher(sched_disp_data_t * sched_d_d){
                 context_change = 1;
         }
 
-
+        // Cambia de contexto y no es redundante
         if(context_change == 1)
         {
 
@@ -104,7 +106,7 @@ void dispatcher(sched_disp_data_t * sched_d_d){
                 machine.idle_threads--;
                 assigned_core->idle_threads--;
                 assigned_core->cpu->idle_threads--;
-                printf("\tHilo ocioso en %2d %2d %2d \n", sched_d_d->cpu_id, sched_d_d->core_id, thread);
+                printf("\tHabía hilo ocioso en %2d %2d %2d \n", sched_d_d->cpu_id, sched_d_d->core_id, thread);
             }
             else 
             {
@@ -126,7 +128,7 @@ void dispatcher(sched_disp_data_t * sched_d_d){
             for (i = 0; i < 16; i++)
                 hilo->rn[i] = (*p_hilo)->status.rn[i];
             hilo->PTBR = (*p_hilo)->mm.pgb;
-            clean_tlb(hilo);
+            clean_TLB(hilo);
 
         }
     }

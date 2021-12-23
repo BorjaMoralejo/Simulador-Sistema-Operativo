@@ -12,6 +12,7 @@ typedef void(*func_t)(int);
 
 void timer_DispSched(int _time);
 void timer_PGenerator(int _time);
+void timer_loader(int _time);
 
 void* start_timer(void * _args){
     short int * punt = (short *) _args;
@@ -28,8 +29,10 @@ void* start_timer(void * _args){
         case DISPATCHER_SCHEDULER_FUNC:
             func_timer = &timer_DispSched;
         break;
-        case PGENERATOR_FUNC:
-            func_timer = &timer_PGenerator;
+        //case PGENERATOR_FUNC:
+           // func_timer = &timer_PGenerator;
+        case LOADER_FUNC:
+            func_timer = &timer_loader;
         break;
         default:
             while (1)
@@ -81,7 +84,7 @@ void timer_DispSched(int _time){
         printf("tick dispatcher%d!\n", _time);
     }
 }
-
+/*
 extern int pgen_flag;
 extern pthread_mutex_t pgen_mtx;
 extern pthread_cond_t pgen_cond;
@@ -104,4 +107,26 @@ void timer_PGenerator(int _time){
 
     }
 }
+*/
+extern int loader_flag;
+extern pthread_mutex_t loader_mtx;
+extern pthread_cond_t loader_cond;
 
+void timer_loader(int _time){
+    
+    if(_time % paramStruct.freq_pgen == 0) // tick pgenerator
+    {
+        printf("tick generator%d?\n", _time);
+        // Via libre a generar proceso
+
+        // Se comunica con pgenerator y le da luz verde
+        loader_flag = 0;
+        pthread_cond_signal(&loader_cond);
+
+        // Esperar a que el pgenerator haya terminado
+        while(loader_flag == 0);  
+
+        printf("tick generator%d!\n", _time);
+
+    }
+}

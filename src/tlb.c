@@ -1,6 +1,8 @@
 
+#include "tlb.h"
 #include "estructuras.h"
 // Añadir bits de válido
+
 
 
 /*
@@ -71,5 +73,5 @@ void clean_TLB(thread_t * _thread){
     // poner todos los bits de validez a 0
     int i;
     for (i = 0; i < _thread->mmu->max_entradas; i++)
-        _thread->mmu->entradas[i].paginas = _thread->mmu->entradas[i].paginas & 0x7FFFFFFF;
+        _thread->mmu->entradas[i].pagina = _thread->mmu->entradas[i].pagina & 0x7FFFFFFF;
 }

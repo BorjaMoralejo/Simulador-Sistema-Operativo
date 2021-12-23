@@ -2,7 +2,7 @@
 #define _RT_STRUCT_H 1
 
 #include "estructuras.h"
-
+#include "queue.h"
 
 typedef struct rt_struct rt_struct_t;
 // inicializar struct

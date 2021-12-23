@@ -5,6 +5,7 @@
 
 typedef struct queue_pcb queue_pcb_t;
 typedef struct queue_hueco queue_hueco_t;
+typedef struct huecos_node huecos_node_t;
 
 
 // Cola utilizada por el scheduler
@@ -17,6 +18,13 @@ typedef struct queue_pcb
 	pcb_t **malloc;
 	pthread_mutex_t q_mtx;
 } queue_pcb_t;
+
+typedef struct huecos_node
+{
+    huecos_node_t *next, *prev;
+    int size;
+    int dir;
+}huecos_node_t;
 
 // Cola utilizada para huecos
 typedef struct queue_hueco

@@ -1,17 +1,79 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "physical.h"
 #include "queue.h"
 #include "estructuras.h"
 #include "globals.h"
-#include <stdlib.h>
-	//- [ ] Cargar programas a simular en el simulador
-	//	- [/] Pillar pcb
-	//	- [ ] Tabla de paginas que se guarda en pgb
-	//	- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
-    //  - [ ] PID y esas cosas
+#include "randomp.h"
+
 char line[8];
 extern unsigned char *memoria;
 
 
+int load_program(int _n, pid_t2 _pid);
+
+int loader_flag = 0;
+pthread_mutex_t loader_mtx;
+pthread_cond_t loader_cond;
+
+void init_loader(){
+    pthread_mutex_init(&loader_mtx, NULL);
+    pthread_cond_init(&loader_cond, NULL);
+}
+
+void * start_loader(void * _args){    
+    pid_t2 pid_count = 0;
+    pcb_t * pcb;
+    int i = 0, ret;    
+    int max_program = 10;
+    while (1)
+    {
+        pthread_mutex_lock(&loader_mtx);
+        loader_flag = 1;
+        // esperando al timer
+        while(loader_flag == 1)
+            pthread_cond_wait(&loader_cond, &loader_mtx);
+
+
+        if(i != max_program)
+        {
+            printf("Cargando programa %d...\n", i);
+
+            ret = load_program(i, pid_count);
+            switch (ret)
+            {
+            case 0: // Programa cargado correctamente
+                printf("Programa cargado correctamente %3d!\n", i);
+                i++;
+                pid_count++;
+                break;
+            case -1: // No hay espacio en la memoria, esperar
+                printf("No hay espacio en la memoria! %3d\n", i);
+                break;
+            case -2: // No hay hueco en la cola, esperar
+                printf("No hay hueco en la cola maestra: %3d\n", i);
+                break;
+            case -3: // No hay PCBs libres, esperar
+                break;
+            case -4: // No existe ese programa!
+                printf("No existe programa %3d!\n", i);
+                break;
+            default:
+                printf("Default en el switch de retorno de load_program\n");
+                break;
+            }
+            
+        }else {
+            // FIN del programa de LOADER
+            printf("No hay más programas\n");
+        }
+        pthread_mutex_unlock(&loader_mtx);
+    }
+}
+
+char prog_name[128];
 
 /* 
 Carga el programa con el número _n en memoria si hay hueco.
@@ -22,15 +84,17 @@ Devuelve:
 -3 no hay más PCBs libres.
 -4 No existe el programa
 */
-void load_program(thread_t * _thread, int _n){
+int load_program(int _n, pid_t2 _pid){
       
 
     unsigned int code_start, code_size, data_start, data_size;
     unsigned int dir_code, dir_data;
     unsigned int binary;
+    FILE* fd;
+    sprintf(prog_name, "programs/prog%03d.elf", _n);
 
+    /*(hilo);
 
-    /*
     Como carga el programa en memoria:
     Recibiendo hilo destino y numero de programa válido comprueba los siguientes campos antes de continuar.
     Primero comprueba que haya hueco en la cola del scheduler maestro.
@@ -50,48 +114,49 @@ void load_program(thread_t * _thread, int _n){
     unsigned int i;
     char found = 0;
 
+    printf("Comprobando elementos de cola de scheduler \n");
     // Comprueba que haya hueco en cola del scheduler maestro
-    if(&q_pcb->nElem >= &q_pcb->maxElem)
-    {
-        // -2
-    }
+    if(q_pcb.nElem >= q_pcb.maxElem) // no hay hueco en la cola devolviendo -2
+        return -2;
 
+    printf("Comprobando PCBs \n");
     // Reserva PCB
     pcb = getPCB();
-    if(pcb == NULL)
-    {
-        // -3
-    }
+    if(pcb == NULL) // ho hay PCBs en reserva, devolviendo código de error -3
+        return -3;
     
 
     // Primero debe cargar el programa en el simulador y sacar datos como:
     // Tamaño total de cada parte
     // .text comienzo y longitud
     // .data comienzo y longitud
-
+    printf("Fopen %s\n", prog_name);
     // Abrir fichero
-    if((fd = fopen(prog_name, "r")) == NULL)
+    if((fd = fopen(prog_name, "r")) == NULL) // Si no existe el fichero, devuelve -4
     {
-        // Error, no existe ese programa, terminando?
-        // Liberando pcb
-        //-4
+        putPCB(pcb);// Liberando pcb
+        return -4;
     }
 
     fscanf(fd, "%s %X %X", line, &code_start, &code_size);
     fscanf(fd, "%s %X %X", line, &data_start, &data_size);
-    
+    printf("code_start %d, code_size %d, data_start %d, data_size %d \n", code_start, code_size, data_start, data_size);
+    printf("Comprobando hueco memoria \n");
     // Reservar hueco (si es que hay)
     if( check_space(code_size, &dir_code) != 0)
     {
-        // No hay hueco, salir, cerrar fichero -1
-        // Liberando pcb
+        fclose(fd);// No hay hueco, salir, cerrar fichero -1
+        putPCB(pcb);// Liberando pcb
+        return -1;
     }
+    printf("Comprobando hueco memoria 2 \n");
     // Volver a reservar hueco para datos, si no hay, liberar anterior
     if( check_space(data_size, &dir_data) != 0)
     {
-        release_space(dir_code, code_size);
-        // Liberando pcb
-        // -1
+        release_space(dir_code, code_size); // Liberando asignación de code en memoria
+        putPCB(pcb);// Liberando pcb
+        fclose(fd);// Cerrar fichero
+        return -1;
     }
 
     // Mirar cuantas paginas hay
@@ -110,7 +175,7 @@ void load_program(thread_t * _thread, int _n){
     pcb->mm.code_p = code_start;
     pcb->mm.data_p = data_start;
     pcb->mm.end_p = data_start + data_pages * PAGE_SIZE;
-    pcb->mm.pgg = malloc(total_page_number*sizeof(unsigned int));
+    pcb->mm.pgb = malloc(total_page_number*sizeof(unsigned int));
     
 
     // Rellenando tabla de paginas
@@ -144,7 +209,7 @@ void load_program(thread_t * _thread, int _n){
 
     }
 
-
+    pcb->pid = _pid;
     // Asignando prioridad aleatoria y afinidad aleatoria en el caso de estar activados
     if (paramStruct.random_priority == -1)
         pcb->priority = 0;
@@ -169,6 +234,7 @@ void load_program(thread_t * _thread, int _n){
 
     // Cerrar fichero
     fclose(fd);
+    return 0;
 }
 
 void unload_program(pcb_t * _pcb){
@@ -194,23 +260,26 @@ void unload_program(pcb_t * _pcb){
 
     code_size = _pcb->mm.data_p - _pcb->mm.code_p;
     data_size = _pcb->mm.end_p - _pcb->mm.data_p;
-
+    printf("U1\n");
     code_pages = (code_size / PAGE_SIZE) + ((code_size % PAGE_SIZE) == 0 ? 0 : 1);
 
     // Dir_code es la dirección física de la parte de code y esta siempre será la primera dirección.
     dir_code = _pcb->mm.pgb[0];
+    printf("U2\n");
     dir_data = _pcb->mm.pgb[code_pages];
 
     // Liberando memoria ocupada por el programa de la memoria fisica
+    printf("U3 %d %d\n", dir_code, code_size);
     release_space(dir_code, code_size);
+    printf("U4 %d %d\n", dir_data, data_size);
     release_space(dir_data, data_size);
-
+    printf("U5\n");
 
 
     // Sacar de la tabla de páginas
     free(_pcb->mm.pgb);
-
+    printf("U6\n");
     _pcb->state = PCB_STATE_DEAD;
     putPCB(_pcb);
-
+    printf("U7\n");
 }

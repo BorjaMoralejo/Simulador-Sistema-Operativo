@@ -1,16 +1,17 @@
-- [ ] Loader
+- [/] Loader
 	- [/] Cargar programas a simular en el simulador
 		- [/] Pillar pcb
 		- [/] Tabla de paginas que se guarda en pgb
 		- [/] Cargar ejecutable, copiar en memoria los segmentos de datos y codigo, acualizar tabla de paginas.
-	- [ ] Reemplazar Pgenerator, el tick de pgenerator ahora debe hacer tickear al loader y cambiar parametros. Ahora esos parametros afectan al loader y no PGenerator.
+	- [/] Reemplazar Pgenerator, el tick de pgenerator ahora debe hacer tickear al loader y cambiar parametros. Ahora esos parametros afectan al loader y no PGenerator.
 		- [/] Prioridades
 		- [/] Afinidad
 
-- [ ] Machine
-	- [ ] MMU
+- [/] Machine
+	- [/] MMU
 		- [/] TLB
-		- [ ] Limitar accesos a ciertas direcciones, mirando si la página que se quiere acceder esta fuera de rango con code_start y end
+		- [/] Limitar accesos a ciertas direcciones, mirando si la página que se quiere acceder esta fuera de rango con code_start y end
+			- [-] Forzar terminación (estado TERM) (no porque no va a haber código que haga esto)
 	- [/] PTBR	<- inicializarla en memoria y darle valor al registro pt br
 		- [/] Hacerlo con un malloc
 		- [-] Instanciarla reservando memoria (lo del kernel) (ademas guarda los datos de otros campos, extra)
@@ -38,22 +39,21 @@
 		- [-] Generar las tablas de las paginas y que estas se almacenen en memoria haciendo el malloc a mano
 	- [/] Descargar programas de memoria
 	
-- [ ] PCB
+- [/] PCB
 	- [/] Estructura mm
 	- [/] status por cambio de contexto
-		- [ ] que limpie la tlb al hacer cambio de contexto
+		- [/] que limpie la tlb al hacer cambio de contexto
 	- [/] Al generarlo poner esos estados al valor por defecto
 
 
 
-- [ ] Funcionalidad del simulador
-	- [ ] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
-		- [ ] Si me sobra tiempo, simular una cache, que tampoco es para tanto
-	- [ ] Terminar programa con exit
-	- [ ] Sacar programas de memoria al Terminar
-	- [ ] Comprobar los cambios de contexto
-	- [ ] Al intentar cargar el programa tener en cuenta los errores
-	- [ ] Page fault
+- [/] Funcionalidad del simulador
+	- [/] Page fault
+	- [/] Bloqueos aleatorios al no encontrar la tabla en la TLB o de forma aleatoria al hacer un load
+	- [/] Terminar programa con exit
+	- [/] Sacar programas de memoria al Terminar
+	- [/] Comprobar los cambios de contexto
+	- [/] Al intentar cargar el programa tener en cuenta los errores
 	
 ORDEN: Memoria, Maquina con componentes, tablas, loader
 
@@ -72,11 +72,10 @@ ORDEN: Memoria, Maquina con componentes, tablas, loader
 - [/] Generar tablas para los programas cargados en memoria
 - [/] Asignar esa tabla al pgb, luego esa señal al procesador cuando carga
 	- [/] Hacerlo con malloc porque si no es mucho lio
-	- [ ] Eliminar las otras entradas del TLB al cambiar de contexto para evitar problemas con otros procesos
-- [ ] Mejorar TLB y MMU
-	- [ ] Politica de reemplazo LRU o NRU (añadir bit de referenciado, bit de modificado)
-	- [ ] Mejorar forma de eliminar (bit de validez) 
-	- [ ] Eliminar mejor la TLB
+	- [/] Eliminar las otras entradas del TLB al cambiar de contexto para evitar problemas con otros procesos
+- [/] TLB y MMU
+	- [/] Politica de reemplazo FIFO
+	- [/] Mejorar forma de eliminar (bit de validez) 
 - [/] Liberar memoria con free
 
 

@@ -3,15 +3,8 @@
 
 #define PAGE_SIZE 256
 #define WORD_SIZE 4
-typedef struct huecos_node huecos_node_t;
 
-typedef struct huecos_node
-{
-    huecos_node_t *next, *prev;
-    int size;
-    int dir;
-}huecos_node_t;
-
+void init_physical();
 /*
 Comprueba, siguiendo la política worst fit, si hay un hueco con el espacio requerido. 
 En caso de encontrar el hueco devuelve la posición en _dir y en caso contrario devuelve -1.

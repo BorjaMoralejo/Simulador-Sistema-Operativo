@@ -4,7 +4,6 @@ Este fichero contiene las estructuras de datos usadas por el simulador de sistem
 #ifndef _ESTRUCTURAS_H
 #define _ESTRUCTURAS_H
 #include <pthread.h>
-#include "tlb.h"
 #define PCB_STATE_IDLE 		0
 #define PCB_STATE_RUNNING 	1
 #define PCB_STATE_BLOCKED 	2
@@ -17,7 +16,6 @@ typedef struct lkdList_int lkdList_int_t;
 typedef struct lkdList_node_int ll_node_int_t;
 typedef struct mempool_pcb mempool_pcb_t;
 
-typedef struct entrada_tlb entrada_tlb_t;
 typedef struct machine machine_t;
 typedef struct cpu cpu_t;
 typedef struct core core_t;
@@ -25,6 +23,7 @@ typedef struct thread thread_t;
 typedef struct param_init param_init_t;
 typedef struct mm_struct mm_t;
 typedef struct mmu_struct mmu_t;
+typedef struct entrada_tbl entrada_tlb_t;
 
 typedef struct status status_t;
 
@@ -70,6 +69,27 @@ typedef struct param_init{
 	int n_thread;
 }param_init_t;
 
+// Estructura utilizada para guardar el contexto de los procesadores
+typedef struct status
+{
+	int *rn; 	// Array de 16 elementos
+	int pc; 	// 
+	int ri;		// Registro de instrucción
+	//int PTBR;	// 
+	
+
+}status_t;
+
+// Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
+typedef struct mm_struct
+{
+	//unsigned int start_dir;	// Inicio dirección virtual
+	unsigned int code_p; 	// Dirección virtual
+	unsigned int data_p; 	// Dirección virtual
+	unsigned int end_p;		// Dirección final de data
+	unsigned int *pgb;		// Dirección física inicial del programa
+}mm_t;
+
 // Estructura para las estadisticas
 
 // Estructura principal del simulador, procesos
@@ -91,27 +111,9 @@ typedef struct pcb
 
 } pcb_t;
 
-// Estructura utilizada para guardar el contexto de los procesadores
-typedef struct status
-{
-	int *rn; 	// Array de 16 elementos
-	int pc; 	// 
-	int ri;		// Registro de instrucción
-	//int PTBR;	// 
-	
-
-}status_t;
 
 
-// Estructura utilizada para guardar las direcciones virtuales de las instrucciones y datos del proceso.
-typedef struct mm_struct
-{
-	//unsigned int start_dir;	// Inicio dirección virtual
-	unsigned int code_p; 	// Dirección virtual
-	unsigned int data_p; 	// Dirección virtual
-	unsigned int end_p;		// Dirección final de data
-	unsigned int *pgb;		// Dirección física inicial del programa
-}mm_t;
+
 
 
 
@@ -182,5 +184,21 @@ typedef struct thread
 
 
 } thread_t;
+
+
+
+typedef struct mmu_struct
+{
+	entrada_tlb_t *entradas;
+	int indice_entrada;
+	int max_entradas;
+}mmu_t;
+
+typedef struct entrada_tbl
+{
+	unsigned int pagina;
+	unsigned int marco;
+}entrada_tlb_t;
+
 
 #endif
