@@ -30,7 +30,7 @@ void* start_clock(void * _args){
         pthread_mutex_lock(&timer_mtx);
         printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n------------Pulso---------\n\n");
         printf("Memoria usada: %d (%d%%)\n", used_mem, used_mem * 100  / 12582912);
-        printf("Idles: %d\t CPU \t CORE \t THREAD\t PID \t TTL \t  Q\t  PRIO\n", machine.idle_threads);
+        printf("Idles: %d\t CPU \t CORE \t THREAD\t PID \t  Q\t  PRIO\n", machine.idle_threads);
         // avanzar tiempo de la maquina(cpu,cores,hilos)
         for(cpu = 0; cpu < paramStruct.n_cpu; cpu++)
             for(core = 0; core < paramStruct.n_core; core++)
@@ -70,8 +70,8 @@ void* start_clock(void * _args){
                         case PCB_STATE_DEAD:    state='D';  break;
                         default: state='U'; break;
                         }
-                        printf("Proceso[%c] en \t%2d \t%2d \t%2d \t %d\t%4ld \t%3ld \t%3d\n",state,cpu,core,thread,
-                                hilo->pid, hilo->ttl,hilo->q, hilo->priority );
+                        printf("Proceso[%c] en \t%2d \t%2d \t%2d \t %d \t%3ld \t%3d\n",state,cpu,core,thread,
+                                hilo->pid,hilo->q, hilo->priority );
                     }
 
         printf("\n\n-----Timers:\n");

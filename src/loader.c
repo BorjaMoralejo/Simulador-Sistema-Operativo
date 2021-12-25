@@ -160,7 +160,6 @@ int load_program(int _n, pid_t2 _pid){
         fclose(fd);// Cerrar fichero
         return -1;
     }
-
     // Mirar cuantas paginas hay
         // Se tiene que crear un malloc para alvergar el numero de paginas que hay
         // donde va por orden sin tener en cuenta el startdir
@@ -177,7 +176,7 @@ int load_program(int _n, pid_t2 _pid){
     pcb->mm.code_p = code_start;
     pcb->mm.data_p = data_start;
     pcb->mm.end_p = data_start + data_pages * PAGE_SIZE;
-    pcb->mm.pgb = malloc(total_page_number*sizeof(unsigned int));
+    pcb->mm.pgb = malloc((total_page_number+1)*sizeof(unsigned int));
     
 
     // Rellenando tabla de paginas

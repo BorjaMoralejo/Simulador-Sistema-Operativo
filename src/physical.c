@@ -84,7 +84,6 @@ int check_space(unsigned int _req_space, int *_dir){
 
     huecos_node_t * p = huecos;
     huecos_node_t * max = huecos;
-
     // pues eso, comprueba el hueco
     // politica worst fit, encontrar hueco de tamaño máximo y comprobar si entra o no
     while(p->next != NULL)

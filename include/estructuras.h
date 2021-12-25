@@ -102,7 +102,6 @@ typedef struct pcb
 {
 	ll_node_int_t *indice; // Indice del gestor de memoria, no esta relacionado con la simulación
 	pid_t2 pid;
-	long int ttl;
 	char state;
 	int affinity;
 	int priority;
